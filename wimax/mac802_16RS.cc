@@ -2959,7 +2959,7 @@ Mac802_16RS::send_registration ()
     peer = getPeerNode_head ();
     wimaxHdr->header.cid = peer->getPrimary (OUT_CONNECTION)->get_cid ();
     peer->getPrimary (OUT_CONNECTION)->enqueue (p);
-    debug2 ("RA sending registration\n");
+    debug2 ("RS sending registration\n");
 
     //start reg timeout
     if (t6timer_ == NULL)
