@@ -27,238 +27,260 @@ LIST_HEAD (peerNode, PeerNode);
 /**
  * Class PeerNode
  * Supports list
- */ 
+ */
 class PeerNode {
 
 public:
 
-  /**
-   * Constructor
-   * @param index The Mac address of the peer node
-   */
-  PeerNode (int index);
+    /**
+     * Constructor
+     * @param index The Mac address of the peer node
+     */
+    PeerNode (int index);
 
-  /**
-   * Return the address of the peer node
-   * @return The address of the peer node
-   */
-  int getAddr () { return peerIndex_; }
+    /**
+     * Return the address of the peer node
+     * @return The address of the peer node
+     */
+    int getAddr () {
+        return peerIndex_;
+    }
 
-  /**
-   * Set the connection for delay-intolerant management messages
-   * @param i_con The connection used as basic for incoming
-   * @param o_con The connection used as basic for outgoing
-   */
-  void  setBasic (Connection* i_con, Connection* o_con);
-  
-  /**
-   * Return the connection used for delay-intolerant messages
-   */
-  inline Connection*  getBasic (bool out) { return out?basic_out_:basic_in_; }
-  
-  /**
-   * Set the connection for delay-tolerant management messages
-   * @param i_con The connection used as primary for incoming
-   * @param o_con The connection used as primary for outgoing
-   */
-  void  setPrimary (Connection* i_con, Connection* o_con);
-  
-  /**
-   * Return the connection used for delay-tolerant messages
-   */
-  inline Connection*  getPrimary (bool out) { return out?primary_out_:primary_in_; }
-  
-  /**
-   * Set the channel used for standard-based messages
-   * @param i_con The connection used as secondary for incoming
-   * @param o_con The connection used as secondary for outgoing
-   */
-  void  setSecondary (Connection* i_con, Connection* o_con);
-  
-  /**
-   * Return the connection used for standard-based messages
-   */
-  inline Connection*  getSecondary (bool out) { return out?secondary_out_:secondary_in_; }
+    /**
+     * Set the connection for delay-intolerant management messages
+     * @param i_con The connection used as basic for incoming
+     * @param o_con The connection used as basic for outgoing
+     */
+    void  setBasic (Connection* i_con, Connection* o_con);
 
-  /**
-   * Set the channel used for data messages
-   * @param connection 
-   */
-  void  setInData (Connection * connection);
-  
-  /**
-   * Set the channel used for data messages
-   * @param connection 
-   */
-  void  setOutData (Connection * connection);
-  
-  /**
-   * Return the connection used for data messages
-   */
-  Connection*  getOutData () { return outdata_; }
+    /**
+     * Return the connection used for delay-intolerant messages
+     */
+    inline Connection*  getBasic (bool out) {
+        return out?basic_out_:basic_in_;
+    }
 
-  /**
-   * Return the connection used for data messages
-   */
-  Connection*  getInData () { return indata_; }
+    /**
+     * Set the connection for delay-tolerant management messages
+     * @param i_con The connection used as primary for incoming
+     * @param o_con The connection used as primary for outgoing
+     */
+    void  setPrimary (Connection* i_con, Connection* o_con);
 
-  /**
-   * Set the time the last packet was received
-   * @param time The time the last packet was received
-   */
-  void setRxTime (double time);
+    /**
+     * Return the connection used for delay-tolerant messages
+     */
+    inline Connection*  getPrimary (bool out) {
+        return out?primary_out_:primary_in_;
+    }
 
-  /**
-   * Get the time the last packet was received
-   * @return The time the last packet was received
-   */
-  double getRxTime ();  
+    /**
+     * Set the channel used for standard-based messages
+     * @param i_con The connection used as secondary for incoming
+     * @param o_con The connection used as secondary for outgoing
+     */
+    void  setSecondary (Connection* i_con, Connection* o_con);
 
-  /**
-   * Return the stat watch
-   * @return The stat watch
-   */
-  StatWatch * getStatWatch();
+    /**
+     * Return the connection used for standard-based messages
+     */
+    inline Connection*  getSecondary (bool out) {
+        return out?secondary_out_:secondary_in_;
+    }
 
-  /**
-   * Return true if the peer is going down
-   * @return true if the peer is going down
-   */
-  inline bool isGoingDown () { return going_down_; }
+    /**
+     * Set the channel used for data messages
+     * @param connection
+     */
+    void  setInData (Connection * connection);
 
-  /**
-   * Set the status of going down
-   * @param status The link going down status
-   */
-  inline void setGoingDown (bool status) { going_down_ = status; }
+    /**
+     * Set the channel used for data messages
+     * @param connection
+     */
+    void  setOutData (Connection * connection);
 
-  /**
-   * set the channel no associated with the MS - rpi added
-   * @param channel number
-   */
-  inline void setchannel(int channel) { channel_ = channel; }
+    /**
+     * Return the connection used for data messages
+     */
+    Connection*  getOutData () {
+        return outdata_;
+    }
 
-  /**
-   * get the channel no associated with the MS - rpi added 
-   * @return channel number
-   */
-  int getchannel() { return channel_ ; }
- 
-  /** 
-   * Return the requested bandwidth for this node
-   * @return The requested bandwidth for this node
-   */
-  int getReqBw ();
+    /**
+     * Return the connection used for data messages
+     */
+    Connection*  getInData () {
+        return indata_;
+    }
 
-  /**
-   * Return the amount of data queued for this node
-   * @return The queued data for this node
-   */
-  int getQueueLength ();
+    /**
+     * Set the time the last packet was received
+     * @param time The time the last packet was received
+     */
+    void setRxTime (double time);
 
-  /**
-   * Set the requested downlink profile
-   * @param diuc The downlink profile
-   */
-  void setDIUC (int diuc);
+    /**
+     * Get the time the last packet was received
+     * @return The time the last packet was received
+     */
+    double getRxTime ();
 
-  /**
-   * Get the requested downlink profile
-   * @return The downlink profile
-   */
-  int getDIUC ();
+    /**
+     * Return the stat watch
+     * @return The stat watch
+     */
+    StatWatch * getStatWatch();
+
+    /**
+     * Return true if the peer is going down
+     * @return true if the peer is going down
+     */
+    inline bool isGoingDown () {
+        return going_down_;
+    }
+
+    /**
+     * Set the status of going down
+     * @param status The link going down status
+     */
+    inline void setGoingDown (bool status) {
+        going_down_ = status;
+    }
+
+    /**
+     * set the channel no associated with the MS - rpi added
+     * @param channel number
+     */
+    inline void setchannel(int channel) {
+        channel_ = channel;
+    }
+
+    /**
+     * get the channel no associated with the MS - rpi added
+     * @return channel number
+     */
+    int getchannel() {
+        return channel_ ;
+    }
+
+    /**
+     * Return the requested bandwidth for this node
+     * @return The requested bandwidth for this node
+     */
+    int getReqBw ();
+
+    /**
+     * Return the amount of data queued for this node
+     * @return The queued data for this node
+     */
+    int getQueueLength ();
+
+    /**
+     * Set the requested downlink profile
+     * @param diuc The downlink profile
+     */
+    void setDIUC (int diuc);
+
+    /**
+     * Get the requested downlink profile
+     * @return The downlink profile
+     */
+    int getDIUC ();
 
 
-  // Chain element to the list
-  inline void insert_entry(struct peerNode *head) {
-    LIST_INSERT_HEAD(head, this, link);
-  }
-  
-  // Return next element in the chained list
-  PeerNode* next_entry(void) const { return link.le_next; }
+    // Chain element to the list
+    inline void insert_entry(struct peerNode *head) {
+        LIST_INSERT_HEAD(head, this, link);
+    }
 
-  // Remove the entry from the list
-  inline void remove_entry() { 
-    LIST_REMOVE(this, link); 
-  }  
+    // Return next element in the chained list
+    PeerNode* next_entry(void) const {
+        return link.le_next;
+    }
+
+    // Remove the entry from the list
+    inline void remove_entry() {
+        LIST_REMOVE(this, link);
+    }
 protected:
 
-  /*
-   * Pointer to next in the list
-   */
-  LIST_ENTRY(PeerNode) link;
-  //LIST_ENTRY(PeerNode); //for magic draw
+    /*
+     * Pointer to next in the list
+     */
+    LIST_ENTRY(PeerNode) link;
+    //LIST_ENTRY(PeerNode); //for magic draw
 
 private:
-  /**
-   * Mac address of peer node
-   */
-  int peerIndex_;
+    /**
+     * Mac address of peer node
+     */
+    int peerIndex_;
 
-  /**
-   * Used to receive delay intolerant management messages
-   */
-   Connection* basic_in_;
+    /**
+     * Used to receive delay intolerant management messages
+     */
+    Connection* basic_in_;
 
-  /**
-   * Used to send delay intolerant management messages
-   */
-   Connection* basic_out_;
+    /**
+     * Used to send delay intolerant management messages
+     */
+    Connection* basic_out_;
 
-  /**
-   * Used to receive delay tolerant mac messages
-   */
-   Connection* primary_in_;
+    /**
+     * Used to receive delay tolerant mac messages
+     */
+    Connection* primary_in_;
 
-  /**
-   * Used to send delay tolerant mac messages
-   */
-   Connection* primary_out_;
+    /**
+     * Used to send delay tolerant mac messages
+     */
+    Connection* primary_out_;
 
-  /**
-   * Used to receive standard-based protocol (DHCP...)
-   */
-   Connection* secondary_in_;
+    /**
+     * Used to receive standard-based protocol (DHCP...)
+     */
+    Connection* secondary_in_;
 
-  /**
-   * Used to send standard-based protocol (DHCP...)
-   */
-   Connection* secondary_out_;
+    /**
+     * Used to send standard-based protocol (DHCP...)
+     */
+    Connection* secondary_out_;
 
-  /**
-   * Incoming data connection to this client
-   */
-   Connection* indata_;  
-   
-  /**
-   * Outgoing data connection to this client
-   */
-   Connection* outdata_;  
-   
-   /**
-    * Time last packet was received for this peer
-    */
-   double rxtime_;
+    /**
+     * Incoming data connection to this client
+     */
+    Connection* indata_;
 
-   /**
-    * Received signal strength stats
-    */
-   StatWatch rxp_watch_;
+    /**
+     * Outgoing data connection to this client
+     */
+    Connection* outdata_;
 
-   /**
-    * Inidicate the link going down status of the peer node
-    */
-   bool going_down_;
+    /**
+     * Time last packet was received for this peer
+     */
+    double rxtime_;
 
-   /**
-    * For MS, it indicates the requested downlink profile
-    */
-   int diuc_;
+    /**
+     * Received signal strength stats
+     */
+    StatWatch rxp_watch_;
 
-  /**
-   * Associated channel with the MS  rpi added
-   */
-   int channel_; 
+    /**
+     * Inidicate the link going down status of the peer node
+     */
+    bool going_down_;
+
+    /**
+     * For MS, it indicates the requested downlink profile
+     */
+    int diuc_;
+
+    /**
+     * Associated channel with the MS  rpi added
+     */
+    int channel_;
 
 };
 #endif //PEERNODE_H

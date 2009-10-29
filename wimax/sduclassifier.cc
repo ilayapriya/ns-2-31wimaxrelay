@@ -17,14 +17,14 @@
  */
 
 #include "sduclassifier.h"
-  
+
 /*
  * Create a classifier in the given mac
  */
-SDUClassifier::SDUClassifier () 
+SDUClassifier::SDUClassifier ()
 {
-  //set default priority
-  priority_ = 0; 
+    //set default priority
+    priority_ = 0;
 }
 
 /*
@@ -34,13 +34,13 @@ SDUClassifier::SDUClassifier ()
  */
 int SDUClassifier::command(int argc, const char*const* argv)
 {
-  if (argc == 3) {
-    if (strcmp(argv[1], "set-priority") == 0) {
-      priority_ = atoi(argv[2]);
-      return TCL_OK;
+    if (argc == 3) {
+        if (strcmp(argv[1], "set-priority") == 0) {
+            priority_ = atoi(argv[2]);
+            return TCL_OK;
+        }
     }
-  }
-  return TCL_ERROR;
+    return TCL_ERROR;
 }
 
 /**
@@ -49,5 +49,5 @@ int SDUClassifier::command(int argc, const char*const* argv)
  * @return The CID or -1
  */
 int SDUClassifier::classify (Packet * p) {
-  return -1;
+    return -1;
 }

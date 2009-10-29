@@ -23,9 +23,9 @@
  */
 static int FlowIndex = 0;
 ServiceFlow::ServiceFlow (SchedulingType_t scheduling, ServiceFlowQoS *qos) {
-  id_ = UNASSIGNED_FLOW_ID; //assign and increment flow id
-  scheduling_ = scheduling;
-  qos_ = qos;
+    id_ = UNASSIGNED_FLOW_ID; //assign and increment flow id
+    scheduling_ = scheduling;
+    qos_ = qos;
 }
 
 /**
@@ -33,7 +33,7 @@ ServiceFlow::ServiceFlow (SchedulingType_t scheduling, ServiceFlowQoS *qos) {
  */
 void ServiceFlow::pickID ()
 {
-  id_ = FlowIndex++;
+    id_ = FlowIndex++;
 }
 
 /**
@@ -42,7 +42,7 @@ void ServiceFlow::pickID ()
  */
 void ServiceFlow::setID (int id)
 {
-  id_ = id;
+    id_ = id;
 }
 
 

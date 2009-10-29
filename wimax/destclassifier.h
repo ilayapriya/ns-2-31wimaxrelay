@@ -26,34 +26,34 @@
  */
 class DestClassifier : public SDUClassifier
 {
- public:
+public:
 
-  /**
-   * Create a classifier in the given mac
-   */
-  DestClassifier ();
+    /**
+     * Create a classifier in the given mac
+     */
+    DestClassifier ();
 
-  /**
-   * Create a classifier in the given mac
-   * @param mac The mac where it is located
-   */
-  DestClassifier (Mac802_16 *mac);
+    /**
+     * Create a classifier in the given mac
+     * @param mac The mac where it is located
+     */
+    DestClassifier (Mac802_16 *mac);
 
-  /**
-   * Create a classifier in the given mac
-   * @param mac The mac where it is located
-   * @param priority The classifier's priority
-   */
-  DestClassifier (Mac802_16 *mac, int priority_);
+    /**
+     * Create a classifier in the given mac
+     * @param mac The mac where it is located
+     * @param priority The classifier's priority
+     */
+    DestClassifier (Mac802_16 *mac, int priority_);
 
-  /**
-   * Classify a packet and return the CID to use (or -1 if unknown)
-   * @param p The packet to classify
-   * @return The CID or -1
-   */
-  int classify (Packet * p);
+    /**
+     * Classify a packet and return the CID to use (or -1 if unknown)
+     * @param p The packet to classify
+     * @return The CID or -1
+     */
+    int classify (Packet * p);
 
- protected:
+protected:
 
 };
 

@@ -25,9 +25,9 @@
  * @param burstsize The number of byte sent per burst
  */
 ServiceFlowQoS::ServiceFlowQoS (int delay, int datarate, int burstsize) {
-  delay_ = delay;
-  datarate_ = datarate;
-  burstsize_ = burstsize;
+    delay_ = delay;
+    datarate_ = datarate;
+    burstsize_ = burstsize;
 }
 
 

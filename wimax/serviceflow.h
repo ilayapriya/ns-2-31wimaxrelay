@@ -27,11 +27,11 @@
 
 /** Defines the supported scheduling mechanism for the flow */
 enum SchedulingType_t {
-  SERVICE_UGS,
-  SERVICE_ertPS,
-  SERVICE_rtPS,
-  SERVICE_nrtPS,
-  SERVICE_BE
+    SERVICE_UGS,
+    SERVICE_ertPS,
+    SERVICE_rtPS,
+    SERVICE_nrtPS,
+    SERVICE_BE
 };
 
 /** Direction of the flow */
@@ -46,112 +46,128 @@ LIST_HEAD (serviceflow, ServiceFlow);
 
 /**
  * Class ServiceFlow
- * The service flow identifies the service requirement 
- * for the associated connection 
- */ 
+ * The service flow identifies the service requirement
+ * for the associated connection
+ */
 class ServiceFlow {
- public:
-  /**
-   * Constructor
-   */
-  ServiceFlow (SchedulingType_t, ServiceFlowQoS*);
+public:
+    /**
+     * Constructor
+     */
+    ServiceFlow (SchedulingType_t, ServiceFlowQoS*);
 
-  /**
-   * Return the service flow id
-   * @return The service flow id. -1 if not yet assigned
-   */
-  inline int getID () { return id_; }
-  
-  /**
-   * Assign an ID to the service flow
-   * @param id The ID to set
-   */
-  void setID (int id);
+    /**
+     * Return the service flow id
+     * @return The service flow id. -1 if not yet assigned
+     */
+    inline int getID () {
+        return id_;
+    }
 
-  /**
-   * Pick the next available ID. Should be called by a BS to assign a unique ID
-   */
-  void pickID ();
+    /**
+     * Assign an ID to the service flow
+     * @param id The ID to set
+     */
+    void setID (int id);
 
-  /**
-   * Set the scheduling mechanism for this flow
-   * @param scheduling The scheduling type
-   */
-  inline void setScheduling (SchedulingType_t scheduling) {scheduling_ = scheduling;}
-  
-  /**
-   * Return the scheduling type for this service flow
-   */
-  inline SchedulingType_t getScheduling () { return scheduling_; }
-  
-  /**
-   * Set the QoS for this flow
-   * @param qos The new QoS for this flow
-   */
-  inline void setQoS (ServiceFlowQoS* qos) { qos_ = qos; }
+    /**
+     * Pick the next available ID. Should be called by a BS to assign a unique ID
+     */
+    void pickID ();
 
-  /**
-   * Return the QoS for this connection
-   */
-  inline dir_t getDirection () { return direction_; }
+    /**
+     * Set the scheduling mechanism for this flow
+     * @param scheduling The scheduling type
+     */
+    inline void setScheduling (SchedulingType_t scheduling) {
+        scheduling_ = scheduling;
+    }
 
-  /**
-   * Set the QoS for this flow
-   * @param qos The new QoS for this flow
-   */
-  inline void setDirection (dir_t dir) { direction_ = dir; }
+    /**
+     * Return the scheduling type for this service flow
+     */
+    inline SchedulingType_t getScheduling () {
+        return scheduling_;
+    }
 
-  /**
-   * Return the QoS for this connection
-   */
-  inline ServiceFlowQoS * getQoS () { return qos_; }
-  
-  // Chain element to the list
-  inline void insert_entry_head(struct serviceflow *head) {
-    LIST_INSERT_HEAD(head, this, link);
-  }
-  
-  // Chain element to the list
-  inline void insert_entry(ServiceFlow *elem) {
-    LIST_INSERT_AFTER(elem, this, link);
-  }
+    /**
+     * Set the QoS for this flow
+     * @param qos The new QoS for this flow
+     */
+    inline void setQoS (ServiceFlowQoS* qos) {
+        qos_ = qos;
+    }
 
-  // Return next element in the chained list
-  ServiceFlow* next_entry(void) const { return link.le_next; }
+    /**
+     * Return the QoS for this connection
+     */
+    inline dir_t getDirection () {
+        return direction_;
+    }
 
-  // Remove the entry from the list
-  inline void remove_entry() { 
-    LIST_REMOVE(this, link); 
-  }
+    /**
+     * Set the QoS for this flow
+     * @param qos The new QoS for this flow
+     */
+    inline void setDirection (dir_t dir) {
+        direction_ = dir;
+    }
 
- protected:
+    /**
+     * Return the QoS for this connection
+     */
+    inline ServiceFlowQoS * getQoS () {
+        return qos_;
+    }
 
-  /**
-   * Pointer to next in the list
-   */
-  LIST_ENTRY(ServiceFlow) link;
-  //LIST_ENTRY(ServiceFlow); //for magic draw
+    // Chain element to the list
+    inline void insert_entry_head(struct serviceflow *head) {
+        LIST_INSERT_HEAD(head, this, link);
+    }
 
- private:
-  /**
-   * The service flow id
-   */
-   int id_;
+    // Chain element to the list
+    inline void insert_entry(ServiceFlow *elem) {
+        LIST_INSERT_AFTER(elem, this, link);
+    }
 
-  /**
-   * The scheduling type (UGS, rtPS...)
-   */
-   SchedulingType_t scheduling_;
+    // Return next element in the chained list
+    ServiceFlow* next_entry(void) const {
+        return link.le_next;
+    }
 
-   /**
-    * Flow direction
-    */
-   dir_t direction_;
+    // Remove the entry from the list
+    inline void remove_entry() {
+        LIST_REMOVE(this, link);
+    }
 
-   /**
-    * The quality of service for this flow
-    */
-   ServiceFlowQoS * qos_;
+protected:
+
+    /**
+     * Pointer to next in the list
+     */
+    LIST_ENTRY(ServiceFlow) link;
+    //LIST_ENTRY(ServiceFlow); //for magic draw
+
+private:
+    /**
+     * The service flow id
+     */
+    int id_;
+
+    /**
+     * The scheduling type (UGS, rtPS...)
+     */
+    SchedulingType_t scheduling_;
+
+    /**
+     * Flow direction
+     */
+    dir_t direction_;
+
+    /**
+     * The quality of service for this flow
+     */
+    ServiceFlowQoS * qos_;
 
 };
 #endif //SERVICEFLOW_H

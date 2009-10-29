@@ -156,7 +156,7 @@ Mac802_16RS::init_default_connections ()
 
     //RIDVAN
     //create initial ranging and padding connection
-   con = new Connection (CONN_INIT_RANGING);
+    con = new Connection (CONN_INIT_RANGING);
     connectionManager_->add_connection (con, IN_CONNECTION);	//uplinkdebug2("12\n");
     con = new Connection (CONN_INIT_RANGING);
     connectionManager_->add_connection (con, OUT_CONNECTION);	//downlinkdebug2("12\n");
@@ -165,7 +165,7 @@ Mac802_16RS::init_default_connections ()
     con = new Connection (CONN_PADDING);
     connectionManager_->add_connection (con, OUT_CONNECTION);
     //END RIDVAN
-    
+
     //we need to create a Broadcast to recieve BS advertisements
     con = new Connection (CONN_BROADCAST);
     connectionManager_->add_connection (con, IN_CONNECTION);
@@ -177,9 +177,9 @@ Mac802_16RS::init_default_connections ()
     connectionManager_->add_connection (con, IN_CONNECTION);
 
     //TODO revised: Add new connection for accepting subscriber connections
-    
-    
-    
+
+
+
 }
 
 /**
@@ -188,8 +188,8 @@ Mac802_16RS::init_default_connections ()
 void
 Mac802_16RS::init ()
 {
-  connected = false;
-  ul=1;
+    connected = false;
+    ul=1;
     //Set physical layer to receiving mode
     getPhy ()->setMode (OFDM_RECV);
 
@@ -3570,7 +3570,7 @@ Mac802_16RS::update_watch (StatWatch * watch, double value)
         }
         old_value.data_d = watch->old_average ();
         new_value.data_d = watch->average ();
-		//TODO revised: send_link_parameters_report function definition couldnt be found
+        //TODO revised: send_link_parameters_report function definition couldnt be found
         send_link_parameters_report (addr (), /*TODO revised:addr ()*/getPeerNode_head()->getAddr(), param, old_value,
                                      new_value);
     }
@@ -3729,7 +3729,7 @@ Mac802_16RS::start_dlsubframe ()
         //reschedule for next frame
         dl_timer_->resched (getFrameDuration ());
         ul=0;
-    } else if(connected) {
+    } else if (connected) {
 
         //************************
         //
@@ -3778,7 +3778,7 @@ Mac802_16RS::start_dlsubframe ()
         ul = 1;
     }
     else
-      ul=1;
+        ul=1;
 }
 
 /**

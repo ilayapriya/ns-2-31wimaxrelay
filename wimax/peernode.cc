@@ -24,17 +24,17 @@
  * @param index The Mac address of the peer node
  */
 PeerNode::PeerNode (int index): basic_in_(0), basic_out_(0),
-				primary_in_(0), primary_out_(0),
-				secondary_in_(0), secondary_out_(0), 
-				indata_(0),
-				outdata_(0), rxtime_ (0.0), rxp_watch_()
+        primary_in_(0), primary_out_(0),
+        secondary_in_(0), secondary_out_(0),
+        indata_(0),
+        outdata_(0), rxtime_ (0.0), rxp_watch_()
 {
-  peerIndex_ = index;
-  going_down_ = false;
+    peerIndex_ = index;
+    going_down_ = false;
 //  channel_ = 0;
-  channel_ = (int)Random::uniform(0, 999);
+    channel_ = (int)Random::uniform(0, 999);
 }
-    
+
 /**
  * Set the basic connection
  * @param i_con The connection used as basic for incoming
@@ -42,12 +42,12 @@ PeerNode::PeerNode (int index): basic_in_(0), basic_out_(0),
  */
 void PeerNode::setBasic (Connection* i_con, Connection* o_con)
 {
-  assert (i_con != NULL && o_con !=NULL);
+    assert (i_con != NULL && o_con !=NULL);
 
-  basic_in_ = i_con;
-  i_con->setPeerNode (this);
-  basic_out_ = o_con;
-  o_con->setPeerNode (this);
+    basic_in_ = i_con;
+    i_con->setPeerNode (this);
+    basic_out_ = o_con;
+    o_con->setPeerNode (this);
 }
 
 /**
@@ -57,12 +57,12 @@ void PeerNode::setBasic (Connection* i_con, Connection* o_con)
  */
 void PeerNode::setPrimary (Connection* i_con, Connection* o_con)
 {
-  assert (i_con != NULL && o_con !=NULL);
+    assert (i_con != NULL && o_con !=NULL);
 
-  primary_in_ = i_con;
-  i_con->setPeerNode (this);
-  primary_out_ = o_con;
-  o_con->setPeerNode (this);
+    primary_in_ = i_con;
+    i_con->setPeerNode (this);
+    primary_out_ = o_con;
+    o_con->setPeerNode (this);
 }
 
 /**
@@ -72,36 +72,36 @@ void PeerNode::setPrimary (Connection* i_con, Connection* o_con)
  */
 void PeerNode::setSecondary (Connection* i_con, Connection* o_con)
 {
-  assert (i_con != NULL && o_con !=NULL);
-  
-  secondary_in_ = i_con;
-  i_con->setPeerNode (this);
-  secondary_out_ = o_con;
-  o_con->setPeerNode (this);
+    assert (i_con != NULL && o_con !=NULL);
+
+    secondary_in_ = i_con;
+    i_con->setPeerNode (this);
+    secondary_out_ = o_con;
+    o_con->setPeerNode (this);
 }
 
 /**
  * Set the incoming data connection
  * @param connection The connection
  */
-void PeerNode::setInData (Connection* connection ) 
+void PeerNode::setInData (Connection* connection )
 {
-  assert (connection != NULL);
-  
-  indata_ = connection;
-  connection->setPeerNode (this);
+    assert (connection != NULL);
+
+    indata_ = connection;
+    connection->setPeerNode (this);
 }
 
 /**
  * Set the outgoing data connection
  * @param connection The connection
  */
-void PeerNode::setOutData (Connection* connection ) 
+void PeerNode::setOutData (Connection* connection )
 {
-  assert (connection != NULL);
-  
-  outdata_ = connection;
-  connection->setPeerNode (this);
+    assert (connection != NULL);
+
+    outdata_ = connection;
+    connection->setPeerNode (this);
 }
 
 /**
@@ -110,8 +110,8 @@ void PeerNode::setOutData (Connection* connection )
  */
 void PeerNode::setRxTime (double time)
 {
-  assert (time >=0.0);
-  rxtime_ = time;
+    assert (time >=0.0);
+    rxtime_ = time;
 }
 
 /**
@@ -120,7 +120,7 @@ void PeerNode::setRxTime (double time)
    */
 double PeerNode::getRxTime ()
 {
-  return rxtime_;
+    return rxtime_;
 }
 
 /**
@@ -129,7 +129,7 @@ double PeerNode::getRxTime ()
  */
 StatWatch * PeerNode::getStatWatch()
 {
-  return &rxp_watch_;
+    return &rxp_watch_;
 }
 
 /**
@@ -138,25 +138,25 @@ StatWatch * PeerNode::getStatWatch()
  */
 int PeerNode::getReqBw ()
 {
-  //printf ("Node req bw\n");
-  int bw=0;
-  if (getBasic(IN_CONNECTION)!= NULL) {
-    bw += getBasic(IN_CONNECTION)->getBw();
-    //printf ("\tBasic %d %d\n", getBasic(IN_CONNECTION)->get_cid(), getBasic(IN_CONNECTION)->getBw());
-  }
-  if (getPrimary(IN_CONNECTION)!= NULL) {
-    bw += getPrimary(IN_CONNECTION)->getBw();
-    //printf ("\tPrimary %d %d\n", getPrimary(IN_CONNECTION)->get_cid(), getPrimary(IN_CONNECTION)->getBw());
-  }
-  if (getSecondary(IN_CONNECTION)!= NULL) {
-    bw += getSecondary(IN_CONNECTION)->getBw();
-    //printf ("\tSecondary %d %d\n", getSecondary(IN_CONNECTION)->get_cid(), getSecondary(IN_CONNECTION)->getBw());
-  }
-  if (getInData()!=NULL) {
-    bw += getInData()->getBw();
-    //printf ("\tData %d %d\n", getOutData()->get_cid(), getInData()->getBw());
-  }
-  return bw;
+    //printf ("Node req bw\n");
+    int bw=0;
+    if (getBasic(IN_CONNECTION)!= NULL) {
+        bw += getBasic(IN_CONNECTION)->getBw();
+        //printf ("\tBasic %d %d\n", getBasic(IN_CONNECTION)->get_cid(), getBasic(IN_CONNECTION)->getBw());
+    }
+    if (getPrimary(IN_CONNECTION)!= NULL) {
+        bw += getPrimary(IN_CONNECTION)->getBw();
+        //printf ("\tPrimary %d %d\n", getPrimary(IN_CONNECTION)->get_cid(), getPrimary(IN_CONNECTION)->getBw());
+    }
+    if (getSecondary(IN_CONNECTION)!= NULL) {
+        bw += getSecondary(IN_CONNECTION)->getBw();
+        //printf ("\tSecondary %d %d\n", getSecondary(IN_CONNECTION)->get_cid(), getSecondary(IN_CONNECTION)->getBw());
+    }
+    if (getInData()!=NULL) {
+        bw += getInData()->getBw();
+        //printf ("\tData %d %d\n", getOutData()->get_cid(), getInData()->getBw());
+    }
+    return bw;
 }
 
 /**
@@ -165,16 +165,16 @@ int PeerNode::getReqBw ()
  */
 int PeerNode::getQueueLength ()
 {
-  int bw=0;
-  if (getBasic(OUT_CONNECTION)!= NULL)
-    bw += getBasic(OUT_CONNECTION)->queueByteLength();
-  if (getPrimary(OUT_CONNECTION)!= NULL)
-    bw += getPrimary(OUT_CONNECTION)->queueByteLength();
-  if (getSecondary(OUT_CONNECTION)!= NULL)
-    bw += getSecondary(OUT_CONNECTION)->queueByteLength();
-  if (getOutData()!=NULL)
-    bw += getOutData()->queueByteLength();
-  return bw;
+    int bw=0;
+    if (getBasic(OUT_CONNECTION)!= NULL)
+        bw += getBasic(OUT_CONNECTION)->queueByteLength();
+    if (getPrimary(OUT_CONNECTION)!= NULL)
+        bw += getPrimary(OUT_CONNECTION)->queueByteLength();
+    if (getSecondary(OUT_CONNECTION)!= NULL)
+        bw += getSecondary(OUT_CONNECTION)->queueByteLength();
+    if (getOutData()!=NULL)
+        bw += getOutData()->queueByteLength();
+    return bw;
 }
 
 /**
@@ -183,7 +183,7 @@ int PeerNode::getQueueLength ()
  */
 void PeerNode::setDIUC (int diuc)
 {
-  diuc_ = diuc;
+    diuc_ = diuc;
 }
 
 /**
@@ -192,7 +192,7 @@ void PeerNode::setDIUC (int diuc)
    */
 int PeerNode::getDIUC ()
 {
-  return diuc_;
+    return diuc_;
 }
 
 

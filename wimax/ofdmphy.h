@@ -27,12 +27,12 @@
 
 /** Definition of supported permutation schemes-- added for OFDMA  */
 enum Permutation_scheme {
-  PUSC = 0,  /* Partial usage of Subcarriers */
-  FUSC = 1,  /* Fully usage of Subcarriers */
-  AMC = 2,   /* Contiguous Subcarriers */
-  OPUSC = 3, /* Optional PUSC, uplink only */
-  OFUSC = 4,  /* Optional FUSC, downlink only */
-  PERM_LAST
+    PUSC = 0,  /* Partial usage of Subcarriers */
+    FUSC = 1,  /* Fully usage of Subcarriers */
+    AMC = 2,   /* Contiguous Subcarriers */
+    OPUSC = 3, /* Optional PUSC, uplink only */
+    OFUSC = 4,  /* Optional FUSC, downlink only */
+    PERM_LAST
 };
 
 /*
@@ -40,10 +40,10 @@ enum Permutation_scheme {
  * ftp://download.intel.com/technology/itj/2004/volume08issue03/art03_scalableofdma/vol8_art03.pdf
  */
 
-/* Store information about different combinations 
+/* Store information about different combinations
  * of bandwidth and permutation
  * - Permutation
- * - Channel bandwidth 
+ * - Channel bandwidth
  * - FFT size
  * - Number of used subcarriers
  * - Number of subchannels
@@ -54,367 +54,371 @@ enum Permutation_scheme {
  */
 #define NB_OFDMA_PHY_PARAM 9
 enum Ofdma_index_t {
-  OFDMA_INDEX_PERM = 0,
-  OFDMA_INDEX_BW,
-  OFDMA_INDEX_FFT,
-  OFDMA_INDEX_NUSED,
-  OFDMA_INDEX_NBSUBCH,
-  OFDMA_INDEX_NBSUBCAR,
-  OFDMA_INDEX_NBDATASUBCAR,
-  OFDMA_INDEX_SLOT_WIDTH,
-  OFDMA_INDEX_SLOT_LENGTH
+    OFDMA_INDEX_PERM = 0,
+    OFDMA_INDEX_BW,
+    OFDMA_INDEX_FFT,
+    OFDMA_INDEX_NUSED,
+    OFDMA_INDEX_NBSUBCH,
+    OFDMA_INDEX_NBSUBCAR,
+    OFDMA_INDEX_NBDATASUBCAR,
+    OFDMA_INDEX_SLOT_WIDTH,
+    OFDMA_INDEX_SLOT_LENGTH
 };
 
 //Note: Currently comment 20MHz data since the propagation model
 //      does not support it.
-static const unsigned long DL_OFDMA_DATA [][NB_OFDMA_PHY_PARAM] = 
-  {{PUSC, 5000000, 512, 421, 15, 28, 24, 1, 2},
-   {PUSC, 10000000, 1024, 841, 30, 28, 24, 1, 2},
-   /*{PUSC, 20000000, 2048, 1681, 60, 28, 24, 1, 2},*/
-   {FUSC, 5000000, 512, 426, 8, 48, 48, 1, 1},
-   {FUSC, 10000000, 1024, 851, 16, 48, 48, 1, 1},
-   /*{FUSC, 20000000, 2048, 1703, 32, 48, 48, 1, 1},*/
-   {OFUSC, 5000000, 512, 433, 8, 48, 48, 1, 1},
-   {OFUSC, 10000000, 1024, 865, 16, 48, 48, 1, 1},
-   /*{OFUSC, 20000000, 2048, 1729, 32, 48, 48, 1, 1},*/
-   {AMC, 5000000, 512, 433, 8, 48, 48, 1, 1},
-   {AMC, 10000000, 1024, 865, 16, 48, 48, 1, 1}
-   /*{AMC, 20000000, 2048, 1729, 32, 48, 48, 1, 1}*/
-  };
+static const unsigned long DL_OFDMA_DATA [][NB_OFDMA_PHY_PARAM] =
+{{PUSC, 5000000, 512, 421, 15, 28, 24, 1, 2},
+    {PUSC, 10000000, 1024, 841, 30, 28, 24, 1, 2},
+    /*{PUSC, 20000000, 2048, 1681, 60, 28, 24, 1, 2},*/
+    {FUSC, 5000000, 512, 426, 8, 48, 48, 1, 1},
+    {FUSC, 10000000, 1024, 851, 16, 48, 48, 1, 1},
+    /*{FUSC, 20000000, 2048, 1703, 32, 48, 48, 1, 1},*/
+    {OFUSC, 5000000, 512, 433, 8, 48, 48, 1, 1},
+    {OFUSC, 10000000, 1024, 865, 16, 48, 48, 1, 1},
+    /*{OFUSC, 20000000, 2048, 1729, 32, 48, 48, 1, 1},*/
+    {AMC, 5000000, 512, 433, 8, 48, 48, 1, 1},
+    {AMC, 10000000, 1024, 865, 16, 48, 48, 1, 1}
+    /*{AMC, 20000000, 2048, 1729, 32, 48, 48, 1, 1}*/
+};
 
 /*
  * Note for PUSC: The slot allocation is 1 Subchannel x 3 OFDM symbols
- *  Each subchannel is 6 tiles wide and each tile has 4 pilot subcarrier 
- *  and 8 data subcarrier. Therefore each slot has 24 pilot and 48 data 
- *  over 3 OFDM symbols. This makes an average of 8 pilot subcarrier and 
- *  16 data subcarrier per symbol (24 total). 
+ *  Each subchannel is 6 tiles wide and each tile has 4 pilot subcarrier
+ *  and 8 data subcarrier. Therefore each slot has 24 pilot and 48 data
+ *  over 3 OFDM symbols. This makes an average of 8 pilot subcarrier and
+ *  16 data subcarrier per symbol (24 total).
  * Note for OPUSC: The slot allocation is 1 Subchannel x 3 OFDM symbols
- *  Each subchannel is 6 tiles wide and each tile has 1 pilot subcarrier 
- *  and 8 data subcarrier. Therefore each slot has 6 pilot and 48 data 
- *  over 3 OFDM symbols. This makes an average of 2 pilot subcarrier and 
- *  16 data subcarrier per symbol (18 total). 
+ *  Each subchannel is 6 tiles wide and each tile has 1 pilot subcarrier
+ *  and 8 data subcarrier. Therefore each slot has 6 pilot and 48 data
+ *  over 3 OFDM symbols. This makes an average of 2 pilot subcarrier and
+ *  16 data subcarrier per symbol (18 total).
  */
 //Note: Currently comment 20MHz data since the propagation model
 //      does not support it.
-static const unsigned long UL_OFDMA_DATA [][NB_OFDMA_PHY_PARAM] = 
-  {{PUSC, 5000000, 512, 409, 17, 24, 16, 1, 3},
-   {PUSC, 10000000, 1024, 841, 35, 24, 16, 1, 3},
-   /*{PUSC, 20000000, 2048, 1681, 92, 24, 16, 1, 3},*/
-   {OPUSC, 5000000, 512, 433, 24, 18, 16, 1, 3},
-   {OPUSC, 10000000, 1024, 865, 48, 18, 16, 1, 3},
-   /*{OPUSC, 20000000, 2048, 1729, 96, 18, 16, 1, 3},*/
-   {AMC, 5000000, 512, 433, 8, 48, 48, 1, 1},
-   {AMC, 10000000, 1024, 865, 16, 48, 48, 1, 1}
-   /*{AMC, 20000000, 2048, 1729, 32, 48, 48, 1, 1}*/
-  };
+static const unsigned long UL_OFDMA_DATA [][NB_OFDMA_PHY_PARAM] =
+{{PUSC, 5000000, 512, 409, 17, 24, 16, 1, 3},
+    {PUSC, 10000000, 1024, 841, 35, 24, 16, 1, 3},
+    /*{PUSC, 20000000, 2048, 1681, 92, 24, 16, 1, 3},*/
+    {OPUSC, 5000000, 512, 433, 24, 18, 16, 1, 3},
+    {OPUSC, 10000000, 1024, 865, 48, 18, 16, 1, 3},
+    /*{OPUSC, 20000000, 2048, 1729, 96, 18, 16, 1, 3},*/
+    {AMC, 5000000, 512, 433, 8, 48, 48, 1, 1},
+    {AMC, 10000000, 1024, 865, 16, 48, 48, 1, 1}
+    /*{AMC, 20000000, 2048, 1729, 32, 48, 48, 1, 1}*/
+};
 
 /** Definition of supported rate */
 enum Ofdm_mod_rate {
-  OFDM_BPSK_1_2,   /* Efficiency is 1 bps/Hz */
-  OFDM_QPSK_1_2,   /* Efficiency is 2 bps/Hz */
-  OFDM_QPSK_3_4,   /* Efficiency is 2 bps/Hz */
-  OFDM_16QAM_1_2,  /* Efficiency is 4 bps/Hz */
-  OFDM_16QAM_3_4,  /* Efficiency is 4 bps/Hz */
-  OFDM_64QAM_2_3,  /* Efficiency is 6 bps/Hz */
-  OFDM_64QAM_3_4   /* Efficiency is 6 bps/Hz */
+    OFDM_BPSK_1_2,   /* Efficiency is 1 bps/Hz */
+    OFDM_QPSK_1_2,   /* Efficiency is 2 bps/Hz */
+    OFDM_QPSK_3_4,   /* Efficiency is 2 bps/Hz */
+    OFDM_16QAM_1_2,  /* Efficiency is 4 bps/Hz */
+    OFDM_16QAM_3_4,  /* Efficiency is 4 bps/Hz */
+    OFDM_64QAM_2_3,  /* Efficiency is 6 bps/Hz */
+    OFDM_64QAM_3_4   /* Efficiency is 6 bps/Hz */
 };
 
 /** used as a parameter for the direction of traffic-- added for OFDMA */
 enum direction {
-  DL_= 0,
-  UL_= 1,
-};    
+    DL_= 0,
+    UL_= 1,
+};
 
 /** Status of physical layer */
 enum Ofdm_phy_state {
-  OFDM_IDLE,  /* Module is not doing anything */
-  OFDM_SEND,  /* Module is ready to send or sending */
-  OFDM_RECV,  /* Module is can receive or is receiving */
-  OFDM_RX2TX, /* Module is transitioning from receiving mode to sending mode */
-  OFDM_TX2RX  /* Module is transitioning from sending mode to receiving mode */
+    OFDM_IDLE,  /* Module is not doing anything */
+    OFDM_SEND,  /* Module is ready to send or sending */
+    OFDM_RECV,  /* Module is can receive or is receiving */
+    OFDM_RX2TX, /* Module is transitioning from receiving mode to sending mode */
+    OFDM_TX2RX  /* Module is transitioning from sending mode to receiving mode */
 };
 
-/** 
+/**
  * Class OFDMPhy
  * Physical layer implementing OFDM
- */ 
+ */
 class OFDMAPhy : public WirelessPhy {
 
- public:
-  OFDMAPhy();
+public:
+    OFDMAPhy();
 
-  /**
-   * Change the frequency at which the phy is operating
-   * @param freq The new frequency
-   */
-  void setFrequency (double freq);
+    /**
+     * Change the frequency at which the phy is operating
+     * @param freq The new frequency
+     */
+    void setFrequency (double freq);
 
-  /**
-   * Set the new modulation for the physical layer
-   * @param modulation The new physical modulation
-   */
-  void  setModulation (Ofdm_mod_rate modulation);    
-  
-  /**
-   * Return the current modulation
-   */
-  Ofdm_mod_rate  getModulation ();
+    /**
+     * Set the new modulation for the physical layer
+     * @param modulation The new physical modulation
+     */
+    void  setModulation (Ofdm_mod_rate modulation);
 
-  /** 
-   * Set the permutation scheme for the physical layer
-   * @param perm. The new permutation. 
-   * @param dir The direction in which the permutation applies
-   */    
-  void setPermutationscheme (Permutation_scheme perm, direction dir) ;
+    /**
+     * Return the current modulation
+     */
+    Ofdm_mod_rate  getModulation ();
 
-  /** 
-   * Return the permutation scheme 
-   * @param dir The direction 
-   */    
-  Permutation_scheme getPermutationscheme (direction dir) ;
+    /**
+     * Set the permutation scheme for the physical layer
+     * @param perm. The new permutation.
+     * @param dir The direction in which the permutation applies
+     */
+    void setPermutationscheme (Permutation_scheme perm, direction dir) ;
 
-  /**
-   * Set the new transmitting power
-   * @param power The new transmitting power
-   */
+    /**
+     * Return the permutation scheme
+     * @param dir The direction
+     */
+    Permutation_scheme getPermutationscheme (direction dir) ;
 
-  void  setTxPower (double power);
-  
-  /**
-   * Return the current transmitting power
-   */
-  double  getTxPower ();
-  
-  /**
-   * calculate the FFT size (same of UL and DL)
-   * @return the FFT size
-   */
-  int getFFT ();
+    /**
+     * Set the new transmitting power
+     * @param power The new transmitting power
+     */
 
-  /** 
-   * compute the number of subchannels in the given direction 
-   * @param dir The direction
-   * @return The number of subchannels in the given direction 
-   */    
-  int getNumsubchannels (direction dir) ;
+    void  setTxPower (double power);
 
-  /**
-   * Get the number of subcarrier per subchannel per symbol
-   * @param dir The direction
-   * @return The number of subcarrier per subchannel per symbol
-   */
-  int getNumSubcarrier (direction dir);
+    /**
+     * Return the current transmitting power
+     */
+    double  getTxPower ();
 
-  /**
-   * Get the number of data subcarrier per subchannel per symbol
-   * @param dir The direction
-   * @return The number of data subcarrier per subchannel per symbol
-   */
-  int getNumDataSubcarrier (direction dir);
+    /**
+     * calculate the FFT size (same of UL and DL)
+     * @return the FFT size
+     */
+    int getFFT ();
 
-  /**
-   * Get the duration of a slot 
-   * @param dir The direction
-   * @return The duration of a slot
-   */
-  int getSlotLength (direction dir);
+    /**
+     * compute the number of subchannels in the given direction
+     * @param dir The direction
+     * @return The number of subchannels in the given direction
+     */
+    int getNumsubchannels (direction dir) ;
 
-  /**
-   * Get the number of subcarriers used
-   * @param dir The direction
-   * @return The duration of a slot
-   */
-  int getNUsed (direction dir);
+    /**
+     * Get the number of subcarrier per subchannel per symbol
+     * @param dir The direction
+     * @return The number of subcarrier per subchannel per symbol
+     */
+    int getNumSubcarrier (direction dir);
 
-  /**
-   * Compute the transmission time for a packet of size sdusize, num subchannels allocated per OFDM symbol, direction, permuation scheme 
-   * using the given modulation
-   */
-  double getTrxTime (int, Ofdm_mod_rate, int, direction);
+    /**
+     * Get the number of data subcarrier per subchannel per symbol
+     * @param dir The direction
+     * @return The number of data subcarrier per subchannel per symbol
+     */
+    int getNumDataSubcarrier (direction dir);
 
-  /**
-   * Compute the transmission time using OFDM symbol as
-   * minimum allocation for a packet of size sdusize and
-   * using the given modulation, num subchannels, direction, scheme)
-   */
-  double getTrxSymbolTime (int, Ofdm_mod_rate, int, direction);
+    /**
+     * Get the duration of a slot
+     * @param dir The direction
+     * @return The duration of a slot
+     */
+    int getSlotLength (direction dir);
 
+    /**
+     * Get the number of subcarriers used
+     * @param dir The direction
+     * @return The duration of a slot
+     */
+    int getNUsed (direction dir);
 
-  /**
-   * Compute the total number of subchannels taken for a packet of size sdusize and
-   * using the given modulation, direction, scheme)
-   * @param sdusize The packet size
-   * @param mod The modulation used
-   * @param dir The direction
-   */
-  int getNumSubchannels (int sdusize, Ofdm_mod_rate mod, direction dir);
+    /**
+     * Compute the transmission time for a packet of size sdusize, num subchannels allocated per OFDM symbol, direction, permuation scheme
+     * using the given modulation
+     */
+    double getTrxTime (int, Ofdm_mod_rate, int, direction);
 
-  /**
-   * Return the maximum size in bytes that can be sent for the given 
-   * nb of symbols and modulation, and direction.
-   * This primitive assumes all subcarriers are used. 
-   */
-  int getMaxPktSizeForSymbol (int nbsymbols, Ofdm_mod_rate mod, direction dir);
-
-  /* 
-   * Compute the maximum packet size that can be put in the allocation using
-   * the given number of subchannel, modulation, and direction
-   * @param numSubchannels The number of subchannel allocated
-   * @param mod The modulation rate
-   * param dir The direction
-   */
-  int getMaxPktSize (int numSubchannels, Ofdm_mod_rate mod, direction dir);
-
-  /*
-   * Return the number of bytes that can fit into an allocation of 1 subchannel * 1 OFDM symbol
-   * @param mod The modulation used
-   * @param dir The direction
-   */
-  int getMinAllocSize (Ofdm_mod_rate mod, direction dir);
-
-  int getSlotCapacity(Ofdm_mod_rate rate, direction dir);
-
-  int getMaxBlockSize(Ofdm_mod_rate rate);
+    /**
+     * Compute the transmission time using OFDM symbol as
+     * minimum allocation for a packet of size sdusize and
+     * using the given modulation, num subchannels, direction, scheme)
+     */
+    double getTrxSymbolTime (int, Ofdm_mod_rate, int, direction);
 
 
-  int getMCSIndex (Ofdm_mod_rate rate , int block_size );
+    /**
+     * Compute the total number of subchannels taken for a packet of size sdusize and
+     * using the given modulation, direction, scheme)
+     * @param sdusize The packet size
+     * @param mod The modulation used
+     * @param dir The direction
+     */
+    int getNumSubchannels (int sdusize, Ofdm_mod_rate mod, direction dir);
 
-  /**
-   * Return the duration of a PS (physical slot), unit for allocation time.
-   * Use Frame duration / PS to find the number of available slot per frame
-   */
-  inline double  getPS () { return (4/fs_); }
-    
-  /**
-   * Return the OFDM symbol duration time
-   */
-  double getSymbolTime ();
+    /**
+     * Return the maximum size in bytes that can be sent for the given
+     * nb of symbols and modulation, and direction.
+     * This primitive assumes all subcarriers are used.
+     */
+    int getMaxPktSizeForSymbol (int nbsymbols, Ofdm_mod_rate mod, direction dir);
 
-  /**
-   * Compute the transmission time for a packet of size sdusize and
-   * using the given modulation
-   */
-  double getTrxTime (int, Ofdm_mod_rate);
+    /*
+     * Compute the maximum packet size that can be put in the allocation using
+     * the given number of subchannel, modulation, and direction
+     * @param numSubchannels The number of subchannel allocated
+     * @param mod The modulation rate
+     * param dir The direction
+     */
+    int getMaxPktSize (int numSubchannels, Ofdm_mod_rate mod, direction dir);
 
-  /**
-   * Compute the transmission time using OFDM symbol as
-   * minimum allocation for a packet of size sdusize and
-   * using the given modulation
-   */
-  double getTrxSymbolTime (int, Ofdm_mod_rate);
+    /*
+     * Return the number of bytes that can fit into an allocation of 1 subchannel * 1 OFDM symbol
+     * @param mod The modulation used
+     * @param dir The direction
+     */
+    int getMinAllocSize (Ofdm_mod_rate mod, direction dir);
 
-  /**
-   * Return the maximum size in bytes that can be sent for the given 
-   * nb of symbols and modulation
-   */
-  int getMaxPktSize (double nbsymbols, Ofdm_mod_rate);
+    int getSlotCapacity(Ofdm_mod_rate rate, direction dir);
 
-  /**	
-   * Return the number of PS used by an OFDM symbol
-   */
-  inline int getSymbolPS () { return (int) ((1+g_)*getFFT())/4; }
+    int getMaxBlockSize(Ofdm_mod_rate rate);
 
-  /** 
-   * Set the mode for physical layer
-   */
-  void setMode (Ofdm_phy_state mode);
 
-  /**
-   * Activate node
-   */
-  void node_on ();
-  
-  /**
-   * Deactivate node
-   */
-  void node_off ();
+    int getMCSIndex (Ofdm_mod_rate rate , int block_size );
 
-  /**
-   * get num antenna 
-   */
-  int getNumAntenna();
+    /**
+     * Return the duration of a PS (physical slot), unit for allocation time.
+     * Use Frame duration / PS to find the number of available slot per frame
+     */
+    inline double  getPS () {
+        return (4/fs_);
+    }
 
-  /**
-   * get the MIMO receiver combining scheme
-   */
-  int getMIMORxScheme();
+    /**
+     * Return the OFDM symbol duration time
+     */
+    double getSymbolTime ();
 
-  /** 
-   * Get the bit rate per symbol and subcarrier for the given modulation
-   * @param mod The modulation
-   */
-  double getModulationRate (Ofdm_mod_rate mod);
+    /**
+     * Compute the transmission time for a packet of size sdusize and
+     * using the given modulation
+     */
+    double getTrxTime (int, Ofdm_mod_rate);
 
- protected:
+    /**
+     * Compute the transmission time using OFDM symbol as
+     * minimum allocation for a packet of size sdusize and
+     * using the given modulation
+     */
+    double getTrxSymbolTime (int, Ofdm_mod_rate);
 
-  /**
-   * Update the sampling frequency. Called after changing frequency BW
-   */
-  void updateFs ();
+    /**
+     * Return the maximum size in bytes that can be sent for the given
+     * nb of symbols and modulation
+     */
+    int getMaxPktSize (double nbsymbols, Ofdm_mod_rate);
 
-  /* Overwritten methods for handling packets */
-  void sendDown(Packet *p);
-  
-  int sendUp(Packet *p);
+    /**
+     * Return the number of PS used by an OFDM symbol
+     */
+    inline int getSymbolPS () {
+        return (int) ((1+g_)*getFFT())/4;
+    }
 
- private:
+    /**
+     * Set the mode for physical layer
+     */
+    void setMode (Ofdm_phy_state mode);
 
-  /**
-   * The frequency bandwidth (Hz)
-   */
-  double fbandwidth_;
-   
-  /**
-   * The current modulation
-   */
-  Ofdm_mod_rate modulation_;
+    /**
+     * Activate node
+     */
+    void node_on ();
 
-  /**
-   * The current downlink permutation scheme 
-   */
-  Permutation_scheme dl_perm_; 
+    /**
+     * Deactivate node
+     */
+    void node_off ();
 
-  /**
-   * The current downlink permutation scheme 
-   */
-  Permutation_scheme ul_perm_;    
+    /**
+     * get num antenna
+     */
+    int getNumAntenna();
 
-  /**
-   * The current transmitting power
-   */
-  int tx_power_;
+    /**
+     * get the MIMO receiver combining scheme
+     */
+    int getMIMORxScheme();
 
-  /**
-   * Ratio of CP time over useful time
-   */
-  double g_;
+    /**
+     * Get the bit rate per symbol and subcarrier for the given modulation
+     * @param mod The modulation
+     */
+    double getModulationRate (Ofdm_mod_rate mod);
 
-  /**
-   * The sampling frequency 
-   */
-  double fs_;
-   
-  /**
-   * The state of the OFDM
-   */
-  Ofdm_phy_state state_;
-   
-  /**
-   * Indicates if the node is activated
-   */
-  bool activated_;
+protected:
 
-  /** 
-   * Index in the lookup table for uplink
-   */
-  u_int32_t ul_index_;
+    /**
+     * Update the sampling frequency. Called after changing frequency BW
+     */
+    void updateFs ();
 
-  /**
-   * Index in the lookup table for downlink
-   */
-  u_int32_t dl_index_;
-      
-   
+    /* Overwritten methods for handling packets */
+    void sendDown(Packet *p);
+
+    int sendUp(Packet *p);
+
+private:
+
+    /**
+     * The frequency bandwidth (Hz)
+     */
+    double fbandwidth_;
+
+    /**
+     * The current modulation
+     */
+    Ofdm_mod_rate modulation_;
+
+    /**
+     * The current downlink permutation scheme
+     */
+    Permutation_scheme dl_perm_;
+
+    /**
+     * The current downlink permutation scheme
+     */
+    Permutation_scheme ul_perm_;
+
+    /**
+     * The current transmitting power
+     */
+    int tx_power_;
+
+    /**
+     * Ratio of CP time over useful time
+     */
+    double g_;
+
+    /**
+     * The sampling frequency
+     */
+    double fs_;
+
+    /**
+     * The state of the OFDM
+     */
+    Ofdm_phy_state state_;
+
+    /**
+     * Indicates if the node is activated
+     */
+    bool activated_;
+
+    /**
+     * Index in the lookup table for uplink
+     */
+    u_int32_t ul_index_;
+
+    /**
+     * Index in the lookup table for downlink
+     */
+    u_int32_t dl_index_;
+
+
 };
 #endif //OFDMPHY_H
 

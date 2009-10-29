@@ -30,96 +30,96 @@ class Mac802_16;
  */
 class ServiceFlowHandler {
 
- public:
+public:
 
-  /* 
-   * Create a service flow
-   * @param mac The Mac where it is located
-   */
-  ServiceFlowHandler ();
+    /*
+     * Create a service flow
+     * @param mac The Mac where it is located
+     */
+    ServiceFlowHandler ();
 
-  /*
-   * Set the mac it is located in 
-   * @param mac The mac it is located in 
-   */
-  void setMac (Mac802_16 *mac);
-  
-  /**
-   * Process the given packet. Only service related packets must be sent here.
-   * @param p The packet to process
-   */
-  void  process (Packet * p);
-  
-  /**
-   * Add a flow
-   * @param qos The qos for the new connection
-   */
-  ServiceFlow* addFlow (ServiceFlowQoS * qos);
-      
-  /**
-   * Remove a flow
-   * @param id The flow ID
-   */
-  void  removeFlow (int id);
-    
-  /**
-   * Send a flow request to the given node
-   * @param index The node address
-   * @param incoming The flow direction
-   */
-  void sendFlowRequest (int index, bool incoming);
+    /*
+     * Set the mac it is located in
+     * @param mac The mac it is located in
+     */
+    void setMac (Mac802_16 *mac);
 
-  /**
-   * Add the Static Flows
-   */
-  int addStaticFlow (int argc, const char*const* argv);
+    /**
+     * Process the given packet. Only service related packets must be sent here.
+     * @param p The packet to process
+     */
+    void  process (Packet * p);
 
-  /**
-   * Initialize the Static Flows
-   */
-  void init_static_flows (int index);
+    /**
+     * Add a flow
+     * @param qos The qos for the new connection
+     */
+    ServiceFlow* addFlow (ServiceFlowQoS * qos);
 
- protected:
+    /**
+     * Remove a flow
+     * @param id The flow ID
+     */
+    void  removeFlow (int id);
 
-  /**
-   * process a flow request
-   * @param p The received request
-   */
-  void processDSA_req (Packet *p);
+    /**
+     * Send a flow request to the given node
+     * @param index The node address
+     * @param incoming The flow direction
+     */
+    void sendFlowRequest (int index, bool incoming);
 
-  /**
-   * process a flow response
-   * @param p The received response
-   */
-  void processDSA_rsp (Packet *p);
+    /**
+     * Add the Static Flows
+     */
+    int addStaticFlow (int argc, const char*const* argv);
 
-  /**
-   * process a flow request
-   * @param p The received response
-   */
-  void processDSA_ack (Packet *p);
-  
- private:
+    /**
+     * Initialize the Static Flows
+     */
+    void init_static_flows (int index);
 
-  /**
-   * The Mac where this handler is located
-   */
-   Mac802_16 * mac_;
+protected:
 
-  /**
-   * The list of current flows
-   */
-   struct serviceflow flow_head_;
+    /**
+     * process a flow request
+     * @param p The received request
+     */
+    void processDSA_req (Packet *p);
 
-   /**
-    * List of pending flows
-    */
-   struct serviceflow pendingflow_head_;
+    /**
+     * process a flow response
+     * @param p The received response
+     */
+    void processDSA_rsp (Packet *p);
 
-   /**
-    * The list of current flows
-    */
-   struct serviceflow static_flow_head_; 
+    /**
+     * process a flow request
+     * @param p The received response
+     */
+    void processDSA_ack (Packet *p);
+
+private:
+
+    /**
+     * The Mac where this handler is located
+     */
+    Mac802_16 * mac_;
+
+    /**
+     * The list of current flows
+     */
+    struct serviceflow flow_head_;
+
+    /**
+     * List of pending flows
+     */
+    struct serviceflow pendingflow_head_;
+
+    /**
+     * The list of current flows
+     */
+    struct serviceflow static_flow_head_;
 };
 
 #endif //SERVICEFLOWHANDLER_H

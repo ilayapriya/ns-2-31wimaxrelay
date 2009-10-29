@@ -19,13 +19,13 @@
 #include "neighbordb.h"
 #include "wimaxneighborentry.h"
 
-/** 
+/**
  * Constructor
  */
 NeighborDB::NeighborDB ()
 {
-  nbentry_ = 0;
-  nbs_ = (WimaxNeighborEntry **) malloc (DEFAULT_DB_SIZE*sizeof (WimaxNeighborEntry *));
+    nbentry_ = 0;
+    nbs_ = (WimaxNeighborEntry **) malloc (DEFAULT_DB_SIZE*sizeof (WimaxNeighborEntry *));
 }
 
 /**
@@ -33,9 +33,9 @@ NeighborDB::NeighborDB ()
  */
 NeighborDB::~NeighborDB ()
 {
-  for (int i=0 ; i < nbentry_ ; i++) {
-    delete (nbs_[i]);
-  }
+    for (int i=0 ; i < nbentry_ ; i++) {
+        delete (nbs_[i]);
+    }
 }
 
 /**
@@ -44,11 +44,11 @@ NeighborDB::~NeighborDB ()
  */
 void NeighborDB::addNeighbor (WimaxNeighborEntry *nb)
 {
-  if (nbentry_ == DEFAULT_DB_SIZE) {
-    printf ("Default size for neighbor database is too small. Update DEFAULT_DB_SIZE attribute\n");
-    exit (0);
-  }
-  nbs_[nbentry_++] = nb;
+    if (nbentry_ == DEFAULT_DB_SIZE) {
+        printf ("Default size for neighbor database is too small. Update DEFAULT_DB_SIZE attribute\n");
+        exit (0);
+    }
+    nbs_[nbentry_++] = nb;
 }
 
 /**
@@ -57,17 +57,17 @@ void NeighborDB::addNeighbor (WimaxNeighborEntry *nb)
  */
 void NeighborDB::removeNeighbor (int nbid)
 {
-  assert (getNeighbor (nbid)==NULL);
+    assert (getNeighbor (nbid)==NULL);
 
-  for (int i = 0 ; i < nbentry_ ; i++) {
-    if (nbs_[i]->getID() == nbid) {
-      delete (nbs_[i]);
-      for (int j = i+1 ; j < nbentry_ ; j++, i++)
-	nbs_[i]=nbs_[j];
-      nbentry_--;
-      break;
+    for (int i = 0 ; i < nbentry_ ; i++) {
+        if (nbs_[i]->getID() == nbid) {
+            delete (nbs_[i]);
+            for (int j = i+1 ; j < nbentry_ ; j++, i++)
+                nbs_[i]=nbs_[j];
+            nbentry_--;
+            break;
+        }
     }
-  }
 }
 
 /**
@@ -76,7 +76,7 @@ void NeighborDB::removeNeighbor (int nbid)
  */
 int NeighborDB::getNbNeighbor ()
 {
-  return nbentry_;
+    return nbentry_;
 }
 
 /**
@@ -86,12 +86,12 @@ int NeighborDB::getNbNeighbor ()
  */
 WimaxNeighborEntry * NeighborDB::getNeighbor (int nbid)
 {
-  for (int i = 0 ; i < nbentry_ ; i++) {
-    if (nbs_[i]->getID() == nbid) {
-      return (nbs_[i]);
+    for (int i = 0 ; i < nbentry_ ; i++) {
+        if (nbs_[i]->getID() == nbid) {
+            return (nbs_[i]);
+        }
     }
-  }
-  return NULL;
+    return NULL;
 }
 
 /**
@@ -100,5 +100,5 @@ WimaxNeighborEntry * NeighborDB::getNeighbor (int nbid)
  */
 WimaxNeighborEntry ** NeighborDB::getNeighbors ()
 {
-  return nbs_;
+    return nbs_;
 }

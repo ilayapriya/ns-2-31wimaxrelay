@@ -22,72 +22,72 @@
 //#include "wimaxneighborentry.h"
 #include "mac802_16pkt.h"
 
-/* This is the size of database allocated. Needs to be modified if 
+/* This is the size of database allocated. Needs to be modified if
  * a node could have more entries
  */
 #define DEFAULT_DB_SIZE 10
 
 class WimaxNeighborEntry;
 /**
- * The class is used to store and manipulate the list 
+ * The class is used to store and manipulate the list
  * of neighbors in a given node
  */
 class NeighborDB {
- public:
-  /** 
-   * Constructor
-   */
-  NeighborDB ();
+public:
+    /**
+     * Constructor
+     */
+    NeighborDB ();
 
-  /**
-   * Destructor
-   */
-  ~NeighborDB ();
+    /**
+     * Destructor
+     */
+    ~NeighborDB ();
 
-  /**
-   * Add an entry in the database
-   * @param nb The neighbor to add
-   */
-  void addNeighbor (WimaxNeighborEntry *nb);
+    /**
+     * Add an entry in the database
+     * @param nb The neighbor to add
+     */
+    void addNeighbor (WimaxNeighborEntry *nb);
 
-  /**
-   * Remove the entry associated with the given node
-   * @param nbid The neighbor id
-   */
-  void removeNeighbor (int nbid);
+    /**
+     * Remove the entry associated with the given node
+     * @param nbid The neighbor id
+     */
+    void removeNeighbor (int nbid);
 
-  /**
-   * Return the number of neighbor in the list
-   * @return the number of neighbor in the list
-   */
-  int getNbNeighbor ();
+    /**
+     * Return the number of neighbor in the list
+     * @return the number of neighbor in the list
+     */
+    int getNbNeighbor ();
 
-  /**
-   * Return the entry associated with the given node
-   * @param nbid The neighbor id
-   * @return the entry for the given node or NULL
-   */
-  WimaxNeighborEntry * getNeighbor (int nbid);
+    /**
+     * Return the entry associated with the given node
+     * @param nbid The neighbor id
+     * @return the entry for the given node or NULL
+     */
+    WimaxNeighborEntry * getNeighbor (int nbid);
 
-  /**
-   * Return a pointer to the list of all neighbors
-   * @return a pointer to the list of all neighbors
-   */
-  WimaxNeighborEntry ** getNeighbors ();
+    /**
+     * Return a pointer to the list of all neighbors
+     * @return a pointer to the list of all neighbors
+     */
+    WimaxNeighborEntry ** getNeighbors ();
 
- protected:
+protected:
 
- private:
-  /**
-   * Current number of neighbor
-   */
-  int nbentry_;
+private:
+    /**
+     * Current number of neighbor
+     */
+    int nbentry_;
 
-  /**
-   * Array of neighbors
-   */
-  WimaxNeighborEntry **nbs_;
-  
+    /**
+     * Array of neighbors
+     */
+    WimaxNeighborEntry **nbs_;
+
 };
 
 

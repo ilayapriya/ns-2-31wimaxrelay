@@ -20,20 +20,20 @@
 #include "mac802_16.h"
 #include "scheduling/wimaxscheduler.h"
 
-/* 
+/*
  * Starts a timer for the given duration
  * @param time The timer duration
  */
 void WimaxTimer::start(double time)
 {
-  Scheduler &s = Scheduler::instance();
-  assert(busy_ == 0);
-  busy_ = 1;
-  paused_ = 0;
-  stime = s.clock();
-  rtime = time;
-  assert(rtime >= 0.0);
-  s.schedule(this, &intr, rtime); //schedule the event
+    Scheduler &s = Scheduler::instance();
+    assert(busy_ == 0);
+    busy_ = 1;
+    paused_ = 0;
+    stime = s.clock();
+    rtime = time;
+    assert(rtime >= 0.0);
+    s.schedule(this, &intr, rtime); //schedule the event
 }
 
 /*
@@ -41,45 +41,45 @@ void WimaxTimer::start(double time)
  */
 void WimaxTimer::stop(void)
 {
-  Scheduler &s = Scheduler::instance();
-  
-  assert(busy_);
-  
-  if(paused_ == 0)
-    s.cancel(&intr); //cancel the event
-  
-  busy_ = 0;
-  paused_ = 0;
-  stime = 0.0;
-  rtime = 0.0;
+    Scheduler &s = Scheduler::instance();
+
+    assert(busy_);
+
+    if (paused_ == 0)
+        s.cancel(&intr); //cancel the event
+
+    busy_ = 0;
+    paused_ = 0;
+    stime = 0.0;
+    rtime = 0.0;
 }
 
 void WimaxTimer::pause(void)
 {
-	Scheduler &s = Scheduler::instance();
+    Scheduler &s = Scheduler::instance();
 
-	assert(busy_ && ! paused_);
+    assert(busy_ && ! paused_);
 
-	paused_ = 1;
-	rtime -= s.clock()-stime;
+    paused_ = 1;
+    rtime -= s.clock()-stime;
 
-	assert(rtime >= 0.0);
+    assert(rtime >= 0.0);
 
-	s.cancel(&intr);
+    s.cancel(&intr);
 }
 
 
 void WimaxTimer::resume(void)
 {
-	Scheduler &s = Scheduler::instance();
+    Scheduler &s = Scheduler::instance();
 
-	assert(busy_ && paused_);
+    assert(busy_ && paused_);
 
-	paused_ = 0;
-	stime = s.clock();
+    paused_ = 0;
+    stime = s.clock();
 
-	assert(rtime >= 0.0);
-       	s.schedule(this, &intr, rtime );
+    assert(rtime >= 0.0);
+    s.schedule(this, &intr, rtime );
 }
 
 
@@ -90,13 +90,13 @@ void WimaxTimer::resume(void)
  */
 void WimaxRxTimer::handle(Event *e)
 {
-  busy_ = 0;
-  paused_ = 0;
-  stime = 0.0;
-  rtime = 0.0;
-  mac->receive(record_->p);
-  mac->removePacket(record_);
-  //mac->receive ();
+    busy_ = 0;
+    paused_ = 0;
+    stime = 0.0;
+    rtime = 0.0;
+    mac->receive(record_->p);
+    mac->removePacket(record_);
+    //mac->receive ();
 }
 
 /*
@@ -105,12 +105,12 @@ void WimaxRxTimer::handle(Event *e)
  */
 void WimaxT1Timer::handle(Event *e)
 {
-  busy_ = 0;
-  paused_ = 0;
-  stime = 0.0;
-  rtime = 0.0;
+    busy_ = 0;
+    paused_ = 0;
+    stime = 0.0;
+    rtime = 0.0;
 
-  mac->expire(WimaxT1TimerID);
+    mac->expire(WimaxT1TimerID);
 }
 
 /*
@@ -119,12 +119,12 @@ void WimaxT1Timer::handle(Event *e)
  */
 void WimaxT2Timer::handle(Event *e)
 {
-  busy_ = 0;
-  paused_ = 0;
-  stime = 0.0;
-  rtime = 0.0;
+    busy_ = 0;
+    paused_ = 0;
+    stime = 0.0;
+    rtime = 0.0;
 
-  mac->expire(WimaxT2TimerID);
+    mac->expire(WimaxT2TimerID);
 }
 
 /*
@@ -133,12 +133,12 @@ void WimaxT2Timer::handle(Event *e)
  */
 void WimaxT3Timer::handle(Event *e)
 {
-  busy_ = 0;
-  paused_ = 0;
-  stime = 0.0;
-  rtime = 0.0;
+    busy_ = 0;
+    paused_ = 0;
+    stime = 0.0;
+    rtime = 0.0;
 
-  mac->expire(WimaxT3TimerID);
+    mac->expire(WimaxT3TimerID);
 }
 
 /*
@@ -147,12 +147,12 @@ void WimaxT3Timer::handle(Event *e)
  */
 void WimaxT6Timer::handle(Event *e)
 {
-  busy_ = 0;
-  paused_ = 0;
-  stime = 0.0;
-  rtime = 0.0;
+    busy_ = 0;
+    paused_ = 0;
+    stime = 0.0;
+    rtime = 0.0;
 
-  mac->expire(WimaxT6TimerID);
+    mac->expire(WimaxT6TimerID);
 }
 
 /*
@@ -161,12 +161,12 @@ void WimaxT6Timer::handle(Event *e)
  */
 void WimaxT12Timer::handle(Event *e)
 {
-  busy_ = 0;
-  paused_ = 0;
-  stime = 0.0;
-  rtime = 0.0;
+    busy_ = 0;
+    paused_ = 0;
+    stime = 0.0;
+    rtime = 0.0;
 
-  mac->expire(WimaxT12TimerID);
+    mac->expire(WimaxT12TimerID);
 }
 
 /*
@@ -175,17 +175,17 @@ void WimaxT12Timer::handle(Event *e)
  */
 void WimaxT17Timer::handle(Event *e)
 {
-  busy_ = 0;
-  paused_ = 0;
-  stime = 0.0;
-  rtime = 0.0;
+    busy_ = 0;
+    paused_ = 0;
+    stime = 0.0;
+    rtime = 0.0;
 
-  /** The node did not send a registration: release and
-   *  age out Basic and Primary CIDs
-   */
-  PeerNode * peer = mac->getPeerNode (peerIndex_);
-  mac->debug ("At %f in Mac %d did not register on time...release CIDs\n", NOW, mac->addr(),peerIndex_);
-  mac->removePeerNode (peer);
+    /** The node did not send a registration: release and
+     *  age out Basic and Primary CIDs
+     */
+    PeerNode * peer = mac->getPeerNode (peerIndex_);
+    mac->debug ("At %f in Mac %d did not register on time...release CIDs\n", NOW, mac->addr(),peerIndex_);
+    mac->removePeerNode (peer);
 }
 
 
@@ -195,12 +195,12 @@ void WimaxT17Timer::handle(Event *e)
  */
 void WimaxT21Timer::handle(Event *e)
 {
-  busy_ = 0;
-  paused_ = 0;
-  stime = 0.0;
-  rtime = 0.0;
+    busy_ = 0;
+    paused_ = 0;
+    stime = 0.0;
+    rtime = 0.0;
 
-  mac->expire(WimaxT21TimerID);
+    mac->expire(WimaxT21TimerID);
 }
 
 /*
@@ -209,12 +209,12 @@ void WimaxT21Timer::handle(Event *e)
  */
 void WimaxLostDLMAPTimer::handle(Event *e)
 {
-  busy_ = 0;
-  paused_ = 0;
-  stime = 0.0;
-  rtime = 0.0;
+    busy_ = 0;
+    paused_ = 0;
+    stime = 0.0;
+    rtime = 0.0;
 
-  mac->expire(WimaxLostDLMAPTimerID);
+    mac->expire(WimaxLostDLMAPTimerID);
 }
 
 /*
@@ -223,12 +223,12 @@ void WimaxLostDLMAPTimer::handle(Event *e)
  */
 void WimaxLostULMAPTimer::handle(Event *e)
 {
-  busy_ = 0;
-  paused_ = 0;
-  stime = 0.0;
-  rtime = 0.0;
+    busy_ = 0;
+    paused_ = 0;
+    stime = 0.0;
+    rtime = 0.0;
 
-  mac->expire(WimaxLostULMAPTimerID);
+    mac->expire(WimaxLostULMAPTimerID);
 }
 
 /*
@@ -237,12 +237,12 @@ void WimaxLostULMAPTimer::handle(Event *e)
  */
 void WimaxDCDTimer::handle(Event *e)
 {
-  busy_ = 0;
-  paused_ = 0;
-  stime = 0.0;
-  rtime = 0.0;
+    busy_ = 0;
+    paused_ = 0;
+    stime = 0.0;
+    rtime = 0.0;
 
-  mac->expire(WimaxDCDTimerID);
+    mac->expire(WimaxDCDTimerID);
 }
 
 /*
@@ -251,12 +251,12 @@ void WimaxDCDTimer::handle(Event *e)
  */
 void WimaxUCDTimer::handle(Event *e)
 {
-  busy_ = 0;
-  paused_ = 0;
-  stime = 0.0;
-  rtime = 0.0;
+    busy_ = 0;
+    paused_ = 0;
+    stime = 0.0;
+    rtime = 0.0;
 
-  mac->expire(WimaxUCDTimerID);
+    mac->expire(WimaxUCDTimerID);
 }
 
 /*
@@ -265,12 +265,12 @@ void WimaxUCDTimer::handle(Event *e)
  */
 void WimaxScanIntervalTimer::handle(Event *e)
 {
-  busy_ = 0;
-  paused_ = 0;
-  stime = 0.0;
-  rtime = 0.0;
+    busy_ = 0;
+    paused_ = 0;
+    stime = 0.0;
+    rtime = 0.0;
 
-  mac->expire(WimaxScanIntervalTimerID);
+    mac->expire(WimaxScanIntervalTimerID);
 }
 
 /*
@@ -279,12 +279,12 @@ void WimaxScanIntervalTimer::handle(Event *e)
  */
 void WimaxT44Timer::handle(Event *e)
 {
-  busy_ = 0;
-  paused_ = 0;
-  stime = 0.0;
-  rtime = 0.0;
+    busy_ = 0;
+    paused_ = 0;
+    stime = 0.0;
+    rtime = 0.0;
 
-  mac->expire(WimaxT44TimerID);
+    mac->expire(WimaxT44TimerID);
 }
 
 /*
@@ -293,12 +293,12 @@ void WimaxT44Timer::handle(Event *e)
  */
 void WimaxMobNbrAdvTimer::handle(Event *e)
 {
-  busy_ = 0;
-  paused_ = 0;
-  stime = 0.0;
-  rtime = 0.0;
+    busy_ = 0;
+    paused_ = 0;
+    stime = 0.0;
+    rtime = 0.0;
 
-  mac->expire(WimaxMobNbrAdvTimerID);
+    mac->expire(WimaxMobNbrAdvTimerID);
 }
 
 /*
@@ -307,14 +307,14 @@ void WimaxMobNbrAdvTimer::handle(Event *e)
  */
 void WimaxRdvTimer::handle(Event *e)
 {
-  busy_ = 0;
-  paused_ = 0;
-  stime = 0.0;
-  rtime = 0.0;
+    busy_ = 0;
+    paused_ = 0;
+    stime = 0.0;
+    rtime = 0.0;
 
-  mac->expire(WimaxRdvTimerID);
-  printf ("Rdv timeout going to channel %d\n", channel_);
-  mac->setChannel (channel_);
+    mac->expire(WimaxRdvTimerID);
+    printf ("Rdv timeout going to channel %d\n", channel_);
+    mac->setChannel (channel_);
 }
 
 /*
@@ -322,7 +322,7 @@ void WimaxRdvTimer::handle(Event *e)
  */
 void DlTimer::expire (Event *e)
 {
-  m_->start_dlsubframe();
+    m_->start_dlsubframe();
 }
 
 /*
@@ -330,7 +330,7 @@ void DlTimer::expire (Event *e)
  */
 void UlTimer::expire (Event *e)
 {
-  m_->start_ulsubframe();
+    m_->start_ulsubframe();
 }
 
 /*
@@ -338,7 +338,7 @@ void UlTimer::expire (Event *e)
  */
 void InitTimer::expire (Event *e)
 {
-  m_->init();
+    m_->init();
 }
 
 /*
@@ -347,6 +347,6 @@ void InitTimer::expire (Event *e)
  */
 void ARQTimer::expire(Event *e)
 {
-	connection_->getArqStatus ()->arqTimerHandler();
+    connection_->getArqStatus ()->arqTimerHandler();
 }
 

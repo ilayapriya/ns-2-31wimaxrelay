@@ -18,14 +18,14 @@
 
 #include "wimaxneighborentry.h"
 
-/** 
+/**
  * Constructor
  */
 WimaxNeighborEntry::WimaxNeighborEntry (int id) : nbr_adv_(0), dcd_(0), ucd_ (0), rng_rsp_(0)
 {
-  id_ = id;
-  memset (&state_, 0, sizeof (struct sched_state_info));
-  detected_ = false;
+    id_ = id;
+    memset (&state_, 0, sizeof (struct sched_state_info));
+    detected_ = false;
 }
 
 /**
@@ -33,10 +33,10 @@ WimaxNeighborEntry::WimaxNeighborEntry (int id) : nbr_adv_(0), dcd_(0), ucd_ (0)
  */
 WimaxNeighborEntry::~WimaxNeighborEntry ()
 {
-  free (nbr_adv_);
-  free (dcd_);
-  free (ucd_);
-  free (rng_rsp_);
+    free (nbr_adv_);
+    free (dcd_);
+    free (ucd_);
+    free (rng_rsp_);
 }
 
 
@@ -46,7 +46,7 @@ WimaxNeighborEntry::~WimaxNeighborEntry ()
  */
 int WimaxNeighborEntry::getID ()
 {
-  return id_;
+    return id_;
 }
 
 /**
@@ -55,16 +55,16 @@ int WimaxNeighborEntry::getID ()
  */
 void WimaxNeighborEntry::setNbrAdvMessage (mac802_16_nbr_adv_info *frame)
 {
-  nbr_adv_ = frame;
+    nbr_adv_ = frame;
 }
-  
+
 /**
  * Return the neighbor advertisement message
  * @param frame The advertisment message
  */
 mac802_16_nbr_adv_info * WimaxNeighborEntry::getNbrAdvMessage ()
 {
-  return nbr_adv_;
+    return nbr_adv_;
 }
 
 /**
@@ -73,7 +73,7 @@ mac802_16_nbr_adv_info * WimaxNeighborEntry::getNbrAdvMessage ()
  */
 void WimaxNeighborEntry::setDCD (mac802_16_dcd_frame *frame)
 {
-  dcd_ = frame;
+    dcd_ = frame;
 }
 
 /**
@@ -82,7 +82,7 @@ void WimaxNeighborEntry::setDCD (mac802_16_dcd_frame *frame)
  */
 mac802_16_dcd_frame * WimaxNeighborEntry::getDCD ()
 {
-  return dcd_;
+    return dcd_;
 }
 
 /**
@@ -91,7 +91,7 @@ mac802_16_dcd_frame * WimaxNeighborEntry::getDCD ()
  */
 void WimaxNeighborEntry::setUCD (mac802_16_ucd_frame *frame)
 {
-  ucd_ = frame;
+    ucd_ = frame;
 }
 
 /**
@@ -100,7 +100,7 @@ void WimaxNeighborEntry::setUCD (mac802_16_ucd_frame *frame)
  */
 mac802_16_ucd_frame * WimaxNeighborEntry::getUCD ()
 {
-  return ucd_;
+    return ucd_;
 }
 
 /**
@@ -118,7 +118,7 @@ mac802_16_ucd_frame * WimaxNeighborEntry::getUCD ()
  */
 sched_state_info * WimaxNeighborEntry::getState ()
 {
-  return &state_;
+    return &state_;
 }
 
 /**
@@ -127,7 +127,7 @@ sched_state_info * WimaxNeighborEntry::getState ()
  */
 void WimaxNeighborEntry::setDetected (bool detected)
 {
-  detected_ = detected;
+    detected_ = detected;
 }
 
 /**
@@ -136,7 +136,7 @@ void WimaxNeighborEntry::setDetected (bool detected)
  */
 bool WimaxNeighborEntry::isDetected ()
 {
-  return detected_;
+    return detected_;
 }
 
 /**
@@ -145,7 +145,7 @@ bool WimaxNeighborEntry::isDetected ()
  */
 void WimaxNeighborEntry::setRangingRsp (mac802_16_rng_rsp_frame *frame)
 {
-  rng_rsp_ = frame;
+    rng_rsp_ = frame;
 }
 
 /**
@@ -154,6 +154,6 @@ void WimaxNeighborEntry::setRangingRsp (mac802_16_rng_rsp_frame *frame)
  */
 mac802_16_rng_rsp_frame *WimaxNeighborEntry::getRangingRsp ()
 {
-  return rng_rsp_;
+    return rng_rsp_;
 }
 

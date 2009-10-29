@@ -30,78 +30,87 @@ LIST_HEAD (sduClassifier, SDUClassifier);
  */
 class SDUClassifier : public TclObject
 {
-  friend class Mac802_16;
+    friend class Mac802_16;
 
- public:
-  /*
-   * Create a classifier in the given mac
-   */
-  SDUClassifier ();
+public:
+    /*
+     * Create a classifier in the given mac
+     */
+    SDUClassifier ();
 
-  /*
-   * Interface with the TCL script
-   * @param argc The number of parameter
-   * @param argv The list of parameters
-   */
-  int command(int argc, const char*const* argv);
+    /*
+     * Interface with the TCL script
+     * @param argc The number of parameter
+     * @param argv The list of parameters
+     */
+    int command(int argc, const char*const* argv);
 
-  /* 
-   * Return the classifier's priority
-   */
-  inline int getPriority () { return priority_; }
+    /*
+     * Return the classifier's priority
+     */
+    inline int getPriority () {
+        return priority_;
+    }
 
-  /* 
-   * Set the classifier's priority
-   * @param prio The new priority
-   */
-  inline void setPriority (int prio) { priority_ = prio; }
+    /*
+     * Set the classifier's priority
+     * @param prio The new priority
+     */
+    inline void setPriority (int prio) {
+        priority_ = prio;
+    }
 
-  /**
-   * Classify a packet and return the CID to use (or -1 if unknown)
-   * @param p The packet to classify
-   * @return The CID or -1
-   */
-  virtual int classify (Packet * p);
+    /**
+     * Classify a packet and return the CID to use (or -1 if unknown)
+     * @param p The packet to classify
+     * @return The CID or -1
+     */
+    virtual int classify (Packet * p);
 
-  // Chain element to the list
-  inline void insert_entry_head(struct sduClassifier *head) {
-    LIST_INSERT_HEAD(head, this, link);
-  }
-  
-  // Chain element to the list
-  inline void insert_entry(struct SDUClassifier *elem) {
-    LIST_INSERT_AFTER(elem, this, link);
-  }
-  
-  // Return next element in the chained list
-  SDUClassifier* next_entry(void) const { return link.le_next; }
+    // Chain element to the list
+    inline void insert_entry_head(struct sduClassifier *head) {
+        LIST_INSERT_HEAD(head, this, link);
+    }
 
-  // Remove the entry from the list
-  inline void remove_entry() { 
-    LIST_REMOVE(this, link); 
-  }
+    // Chain element to the list
+    inline void insert_entry(struct SDUClassifier *elem) {
+        LIST_INSERT_AFTER(elem, this, link);
+    }
 
- protected:
-  /* 
-   * The max where the classifier is located
-   */
-  Mac802_16 *mac_;
+    // Return next element in the chained list
+    SDUClassifier* next_entry(void) const {
+        return link.le_next;
+    }
 
-  /*
-   * The priority
-   */
-  int priority_;
+    // Remove the entry from the list
+    inline void remove_entry() {
+        LIST_REMOVE(this, link);
+    }
 
-  /*
-   * Pointer to next in the list
-   */
-  LIST_ENTRY(SDUClassifier) link;
-  //LIST_ENTRY(SDUClassifier); //for magic draw
+protected:
+    /*
+     * The max where the classifier is located
+     */
+    Mac802_16 *mac_;
 
-  /* 
-   * Register the Mac
-   */
-  inline void setMac (Mac802_16 *mac) { assert (mac); mac_ = mac; }
+    /*
+     * The priority
+     */
+    int priority_;
+
+    /*
+     * Pointer to next in the list
+     */
+    LIST_ENTRY(SDUClassifier) link;
+    //LIST_ENTRY(SDUClassifier); //for magic draw
+
+    /*
+     * Register the Mac
+     */
+    inline void setMac (Mac802_16 *mac) {
+        assert (mac);
+        mac_ = mac;
+    }
 };
 
 #endif

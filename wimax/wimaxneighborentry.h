@@ -23,146 +23,146 @@
 
 /* Data structure used to store Mac state information during scanning */
 struct sched_state_info {
-  struct state_info *state_info; 
-  FrameMap *map;
-  WimaxT1Timer  *t1timer;
-  WimaxT2Timer  *t2timer;
-  WimaxT6Timer  *t6timer;
-  WimaxT12Timer *t12timer;
-  WimaxT21Timer *t21timer;
-  WimaxLostDLMAPTimer *lostDLMAPtimer;
-  WimaxLostULMAPTimer *lostULMAPtimer;
-  WimaxT44Timer *t44timer;
+    struct state_info *state_info;
+    FrameMap *map;
+    WimaxT1Timer  *t1timer;
+    WimaxT2Timer  *t2timer;
+    WimaxT6Timer  *t6timer;
+    WimaxT12Timer *t12timer;
+    WimaxT21Timer *t21timer;
+    WimaxLostDLMAPTimer *lostDLMAPtimer;
+    WimaxLostULMAPTimer *lostULMAPtimer;
+    WimaxT44Timer *t44timer;
 };
 
 /**
  * Store information about a neighboring BS.
  */
 class WimaxNeighborEntry {
- public:
-  /** 
-   * Constructor
-   */
-  WimaxNeighborEntry (int id);
+public:
+    /**
+     * Constructor
+     */
+    WimaxNeighborEntry (int id);
 
-  /**
-   * Destructor
-   */
-  ~WimaxNeighborEntry ();
+    /**
+     * Destructor
+     */
+    ~WimaxNeighborEntry ();
 
-  /**
-   * Return the address of the neighbor of this entry
-   * @return the address of the neighbor of this entry
-   */
-  int getID ();
+    /**
+     * Return the address of the neighbor of this entry
+     * @return the address of the neighbor of this entry
+     */
+    int getID ();
 
-  /**
-   * Set the neighbor advertisement message
-   * @param frame The advertisment message
-   */
-  void setNbrAdvMessage (mac802_16_nbr_adv_info *frame);
-  
-  /**
-   * Return the neighbor advertisement message
-   * @param frame The advertisment message
-   */
-  mac802_16_nbr_adv_info * getNbrAdvMessage ();
+    /**
+     * Set the neighbor advertisement message
+     * @param frame The advertisment message
+     */
+    void setNbrAdvMessage (mac802_16_nbr_adv_info *frame);
 
-  /**
-   * Set the DCD message received during scanning
-   * @param dcd the DCD message received
-   */
-  void setDCD (mac802_16_dcd_frame *frame);
+    /**
+     * Return the neighbor advertisement message
+     * @param frame The advertisment message
+     */
+    mac802_16_nbr_adv_info * getNbrAdvMessage ();
 
-  /**
-   * Get the DCD message received during scanning
-   * @return the DCD message received
-   */
-  mac802_16_dcd_frame *getDCD ();  
+    /**
+     * Set the DCD message received during scanning
+     * @param dcd the DCD message received
+     */
+    void setDCD (mac802_16_dcd_frame *frame);
 
-  /**
-   * Set the UCD message received during scanning
-   * @param dcd the DCD message received
-   */
-  void setUCD (mac802_16_ucd_frame *frame);
+    /**
+     * Get the DCD message received during scanning
+     * @return the DCD message received
+     */
+    mac802_16_dcd_frame *getDCD ();
 
-  /**
-   * Get the DCD message received during scanning
-   * @return the DCD message received
-   */
-  mac802_16_ucd_frame *getUCD ();  
+    /**
+     * Set the UCD message received during scanning
+     * @param dcd the DCD message received
+     */
+    void setUCD (mac802_16_ucd_frame *frame);
 
-  /**
-   * Set the UCD message received during scanning
-   * @param dcd the DCD message received
-   */
-  void setRangingRsp (mac802_16_rng_rsp_frame *frame);
+    /**
+     * Get the DCD message received during scanning
+     * @return the DCD message received
+     */
+    mac802_16_ucd_frame *getUCD ();
 
-  /**
-   * Get the DCD message received during scanning
-   * @return the DCD message received
-   */
-  mac802_16_rng_rsp_frame *getRangingRsp ();  
+    /**
+     * Set the UCD message received during scanning
+     * @param dcd the DCD message received
+     */
+    void setRangingRsp (mac802_16_rng_rsp_frame *frame);
 
-  /**
-   * Mark the neighbor as being detected
-   * @param detected indicate if the neighbor has been detected
-   */
-  void setDetected (bool detected);
+    /**
+     * Get the DCD message received during scanning
+     * @return the DCD message received
+     */
+    mac802_16_rng_rsp_frame *getRangingRsp ();
 
-  /**
-   * Indicates the neighbor as being detected
-   * @return indication if the neighbor has been detected
-   */
-  bool isDetected ();
+    /**
+     * Mark the neighbor as being detected
+     * @param detected indicate if the neighbor has been detected
+     */
+    void setDetected (bool detected);
 
-  /**
-   * Set the MAC state associated with this neighbor
-   * @param state
-   */
-  //void setState (sched_state_info *state);
+    /**
+     * Indicates the neighbor as being detected
+     * @return indication if the neighbor has been detected
+     */
+    bool isDetected ();
 
-  /**
-   * Get the MAC state associated with this neighbor
-   * @return the MAC state associated with this neighbor
-   */
-  sched_state_info * getState ();
+    /**
+     * Set the MAC state associated with this neighbor
+     * @param state
+     */
+    //void setState (sched_state_info *state);
 
- private:
-  /**
-   * The MAC address of neighbor
-   */
-  int id_;
+    /**
+     * Get the MAC state associated with this neighbor
+     * @return the MAC state associated with this neighbor
+     */
+    sched_state_info * getState ();
 
-  /**
-   * The neighbor info adv message
-   */
-  struct mac802_16_nbr_adv_info *nbr_adv_;
+private:
+    /**
+     * The MAC address of neighbor
+     */
+    int id_;
 
-  /**
-   * The DCD message received during scanning
-   */
-  mac802_16_dcd_frame *dcd_;
+    /**
+     * The neighbor info adv message
+     */
+    struct mac802_16_nbr_adv_info *nbr_adv_;
 
-  /**
-   * The DCD message received during scanning
-   */
-  mac802_16_ucd_frame *ucd_;
+    /**
+     * The DCD message received during scanning
+     */
+    mac802_16_dcd_frame *dcd_;
 
-  /** 
-   * The ranging response received during scanning
-   */
-  mac802_16_rng_rsp_frame *rng_rsp_;
+    /**
+     * The DCD message received during scanning
+     */
+    mac802_16_ucd_frame *ucd_;
 
-  /**
-   * Save the state
-   */
-  struct sched_state_info state_;
+    /**
+     * The ranging response received during scanning
+     */
+    mac802_16_rng_rsp_frame *rng_rsp_;
 
-  /**
-   * Indicate if the neighbor has been detected
-   */
-  bool detected_;
+    /**
+     * Save the state
+     */
+    struct sched_state_info state_;
+
+    /**
+     * Indicate if the neighbor has been detected
+     */
+    bool detected_;
 };
-  
+
 #endif
