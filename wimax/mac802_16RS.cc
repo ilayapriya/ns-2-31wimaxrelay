@@ -879,14 +879,14 @@ void
 Mac802_16RS::receive (Packet * pktRx_)
 {
     assert (pktRx_);
-    debug2 ("SS recieves a packet\n");
+    debug2 ("RS recieves a packet\n");
     struct hdr_cmn *ch = HDR_CMN (pktRx_);
     hdr_mac802_16 *wimaxHdr;
     int flag_cdma_packet = 0;
     wimaxHdr = HDR_MAC802_16 (pktRx_);
 
 #ifdef DEBUG_WIMAX
-    debug10 ("At %f (SS) in Mac %d, RECEIVE, packet received (type=%s)\n", NOW,
+    debug10 ("At %f (RS) in Mac %d, RECEIVE, packet received (type=%s)\n", NOW,
              index_, packet_info.name (ch->ptype ()));
     debug10 (" phyinfo header - symbol offset = %d, numsymbol = %d\n",
              wimaxHdr->phy_info.OFDMSymbol_offset,
@@ -1326,7 +1326,7 @@ Mac802_16RS::receive (Packet * pktRx_)
             }
         }
 
-        debug2 (" in MAC SS, [%d] subcarriers signal power are calculated.\n ",
+        debug2 (" in MAC RS, [%d] subcarriers signal power are calculated.\n ",
                 counter);
 
 
@@ -1414,16 +1414,16 @@ Mac802_16RS::receive (Packet * pktRx_)
             {
                 //SIR =  (-beta) * log( eesm_sum/(num_subcarrier_block) );
                 SIR = (-beta) * log (eesm_sum / counter);
-                debug2 (" SIR-SS = %.2f = \n", SIR);
+                debug2 (" SIR-RS = %.2f = \n", SIR);
                 SIR = 10 * log10 (SIR);
-                debug2 (" SIR-SS in dB= %.2f = \n", SIR);
+                debug2 (" SIR-RS in dB= %.2f = \n", SIR);
                 BLER = global->TableLookup (index, SIR);
             }
             else
             {
                 BLER = 0;
             }
-            debug2 (" BLER at SS 0 complete blocks = %.2f  \n", BLER);
+            debug2 (" BLER at RS 0 complete blocks = %.2f  \n", BLER);
 
 #if 0
 
@@ -1483,7 +1483,7 @@ Mac802_16RS::receive (Packet * pktRx_)
                 //SIR =  (-beta) * log( eesm_sum/(num_subcarrier_block) );
                 SIR = (-beta) * log (eesm_sum / counter);
                 SIR = 10 * log10 (SIR);
-                debug2 (" SIR-SS = %.2f = \n", SIR);
+                debug2 (" SIR-RS = %.2f = \n", SIR);
                 BLER = global->TableLookup (index, SIR);
                 debug ("BLER lookup\n");
             }
@@ -1492,7 +1492,7 @@ Mac802_16RS::receive (Packet * pktRx_)
                 BLER = 0;
             }
 
-            debug2 (" BLER at SS of complete blocks = %.2f  \n", BLER);
+            debug2 (" BLER at RS of complete blocks = %.2f  \n", BLER);
 
 #if 0
             int rand_num = ((rand () % 100) + 1);
@@ -1553,7 +1553,7 @@ Mac802_16RS::receive (Packet * pktRx_)
                         exit (1);
                     }
                     SIR = 10 * log10 (SIR);
-                    debug2 (" SIR-SS = %.2f = \n", SIR);
+                    debug2 (" SIR-RS = %.2f = \n", SIR);
                     BLER = global->TableLookup (index, SIR);
                     debug ("BLER lookup2\n");
                 }
@@ -1561,7 +1561,7 @@ Mac802_16RS::receive (Packet * pktRx_)
                 {
                     BLER = 0;
                 }
-                debug2 (" BLER at SS last block = %.2f = \n", BLER);
+                debug2 (" BLER at RS last block = %.2f = \n", BLER);
 
 
 #if 0
@@ -2986,9 +2986,9 @@ Mac802_16RS::process_reg_rsp (mac802_16_reg_rsp_frame * frame)
     if (frame->response == 0)
     {
         //status OK
-        debug ("At %f (SS) in Mac %d, registration sucessful (nbretry=%d)\n",
+        debug ("At %f (RS) in Mac %d, registration sucessful (nbretry=%d)\n",
                NOW, addr (), nb_reg_retry_);
-        debug2 ("At %f (SS) in Mac %d, registration sucessful (nbretry=%d)\n",
+        debug2 ("At %f (RS) in Mac %d, registration sucessful (nbretry=%d)\n",
                 NOW, addr (), nb_reg_retry_);
         Connection *secondary = peer->getSecondary (IN_CONNECTION);
         if (!secondary)
@@ -3681,7 +3681,7 @@ Mac802_16RS::start_dlsubframe ()
     if (true)
     {
         //TODO : This function must be written carefully. There should be 2 ul and dl timer for bs and ss roles
-        debug2 ("At %f in Mac %d SS scheduler dlsubframe expires %d\n", NOW,
+        debug2 ("At %f in Mac %d RS scheduler dlsubframe expires %d\n", NOW,
                 addr (), scan_info_->substate);
         r_delta_ss = 0;
 
@@ -3788,7 +3788,7 @@ void
 Mac802_16RS::start_ulsubframe ()
 {
     //TODO: In this function ulsubframe devided into two pieces for receive and send, observe the consequences
-    if (ul)
+    if (false)
     {
 
         debug ("At %f in Mac %d RS scheduler ulsubframe expires\n", NOW, addr ());
@@ -3804,7 +3804,7 @@ Mac802_16RS::start_ulsubframe ()
         ul=0;
     } else
     {
-        debug ("At %f in Mac %d SS scheduler ulsubframe expires\n", NOW, addr ());
+        debug ("At %f in Mac %d RS scheduler ulsubframe expires\n", NOW, addr ());
 
         //change state of PHY: even though it should have been done before
         //there are some cases where it does not (during scanning)

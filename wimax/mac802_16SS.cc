@@ -1654,128 +1654,7 @@ end:
 }
 //End RPI
 
-/**
- * Process a MAC packet
- * @param p The MAC packet received
- */
-void Mac802_16SS::process_mac_packet (Packet *p) {
 
-    assert (HDR_CMN(p)->ptype()==PT_MAC);
-    debug10 ("SS %d received MAC packet to process\n", addr());
-
-    hdr_mac802_16 *wimaxHdr = HDR_MAC802_16(p);
-    gen_mac_header_t header = wimaxHdr->header;
-
-    if (header.ht == 1) {
-        debug10 ("SS %d received bandwitdh request packet..don't process\n", addr());
-        return;
-    }
-    //Begin RPI
-    if ((mac802_16_dl_map_frame*) p->accessdata() == NULL)
-    {
-        if (header.type_arqfb == 1)
-        {
-            for (u_int16_t i=0; i < wimaxHdr->num_of_acks; i++)
-            {
-                Connection *connection = this->getCManager ()->get_connection(wimaxHdr->arq_ie[i].cid, true);
-                if (connection)
-                {
-                    if (connection->getArqStatus () && connection->getArqStatus ()->isArqEnabled () == 1) {
-                        debug2("ARQ SS: Feedback Payload Received: Has a feedback: Value of i:%d , Value of number of acks:%d \n" , i, wimaxHdr->num_of_acks);
-                        connection->getArqStatus ()->arqRecvFeedback(p, i, connection);
-                    }
-                }
-            }
-            Packet::free(p);
-            return ;
-        }
-    }
-    //End RPI
-    //we cast to this frame because all management frame start with a type
-    mac802_16_dl_map_frame *frame = (mac802_16_dl_map_frame*) p->accessdata();
-
-    switch (frame->type) {
-    case MAC_DL_MAP:
-    {
-        getMap()->setStarttime (NOW-HDR_CMN(p)->txtime());
-        debug2 ("SS MAC_DL_MAP At %f frame start at %f\n", NOW, getMap()->getStarttime());
-
-        process_dl_map (frame);
-
-        //collect receive signal strength stats
-        PeerNode *peer = getPeerNode_head();
-        if (peer) { //it is possible that during a scan the peer is removed if switching channel after processing the dl_map
-            peer->getStatWatch()->update(10*log10(p->txinfo_.RxPr*1e3));
-            debug ("At %f in Mac %d weighted RXThresh: %e rxp average %e lgd %d\n", NOW, index_, macmib_.lgd_factor_*macmib_.RXThreshold_, pow(10,peer->getStatWatch()->average()/10)/1e3);
-            double avg_w = pow(10,(peer->getStatWatch()->average()/10))/1e3;
-
-            if ( avg_w < (macmib_.lgd_factor_*macmib_.RXThreshold_)) {
-                if (state_==MAC802_16_CONNECTED) {
-#ifdef USE_802_21
-                    if (mih_) {
-                        double probability = ((macmib_.lgd_factor_*macmib_.RXThreshold_)-avg_w)/((macmib_.lgd_factor_*macmib_.RXThreshold_)-macmib_.RXThreshold_);
-                        Mac::send_link_going_down (addr(), peer->getAddr(), -1, (int)(100*probability), LGD_RC_LINK_PARAM_DEGRADING, eventId_++);
-                    } else {
-#endif
-                        if (!peer->isGoingDown ()) { //when we don't use 802.21, we only want to send the scan request once
-                            link_scan (NULL); //replaced send_scan_request (); so it checks for pending requests
-                        }
-#ifdef USE_802_21
-                    }
-#endif
-                    peer->setGoingDown (true);
-                }
-            }
-            else {
-                if (peer->isGoingDown()) {
-#ifdef USE_802_21
-                    Mac::send_link_rollback (addr(), peer->getAddr(), eventId_-1);
-#endif
-                    peer->setGoingDown (false);
-                }
-            }
-        }
-        break;
-    }
-    case MAC_DCD:
-        debug2 ("At SS MAC_DCD \n");
-        process_dcd ((mac802_16_dcd_frame*)frame);
-        break;
-    case MAC_UL_MAP:
-        debug2 ("At SS MAC_UL_MAP \n");
-        process_ul_map ((mac802_16_ul_map_frame*)frame);
-        break;
-    case MAC_UCD:
-        debug2 ("At SS MAC_UCD \n");
-        process_ucd ((mac802_16_ucd_frame*)frame);
-        break;
-    case MAC_RNG_RSP:
-        debug2 ("At SS MAC_RNG_RSP \n");
-        process_ranging_rsp ((mac802_16_rng_rsp_frame*) frame);
-        break;
-    case MAC_REG_RSP:
-        debug2 ("At SS MAC_REG_RSP \n");
-        process_reg_rsp ((mac802_16_reg_rsp_frame*) frame);
-        break;
-    case MAC_MOB_SCN_RSP:
-        process_scan_rsp ((mac802_16_mob_scn_rsp_frame *) frame);
-        break;
-    case MAC_MOB_BSHO_RSP:
-        process_bsho_rsp ((mac802_16_mob_bsho_rsp_frame *) frame);
-        break;
-    case MAC_MOB_NBR_ADV:
-        process_nbr_adv ((mac802_16_mob_nbr_adv_frame *) frame);
-        break;
-    case MAC_DSA_REQ:
-    case MAC_DSA_RSP:
-    case MAC_DSA_ACK:
-        serviceFlowHandler_->process (p);  // rpi changed pktRx_ to p, coz pktRx_ is not in this scope anymore.
-        break;
-    default:
-        debug ("unknown packet in SS %d\n", addr());
-        //exit (0);
-    }
-}
 
 /**
  * Process a DL_MAP message
@@ -3672,4 +3551,126 @@ bool Mac802_16SS::IsCollision (const hdr_mac802_16 *wimaxHdr,double power_subcha
 
     return collision;
 
+}
+/**
+ * Process a MAC packet
+ * @param p The MAC packet received
+ */
+void Mac802_16SS::process_mac_packet (Packet *p) {
+
+    assert (HDR_CMN(p)->ptype()==PT_MAC);
+    debug10 ("SS %d received MAC packet to process\n", addr());
+
+    hdr_mac802_16 *wimaxHdr = HDR_MAC802_16(p);
+    gen_mac_header_t header = wimaxHdr->header;
+
+    if (header.ht == 1) {
+        debug10 ("SS %d received bandwitdh request packet..don't process\n", addr());
+        return;
+    }
+    //Begin RPI
+    if ((mac802_16_dl_map_frame*) p->accessdata() == NULL)
+    {
+        if (header.type_arqfb == 1)
+        {
+            for (u_int16_t i=0; i < wimaxHdr->num_of_acks; i++)
+            {
+                Connection *connection = this->getCManager ()->get_connection(wimaxHdr->arq_ie[i].cid, true);
+                if (connection)
+                {
+                    if (connection->getArqStatus () && connection->getArqStatus ()->isArqEnabled () == 1) {
+                        debug2("ARQ SS: Feedback Payload Received: Has a feedback: Value of i:%d , Value of number of acks:%d \n" , i, wimaxHdr->num_of_acks);
+                        connection->getArqStatus ()->arqRecvFeedback(p, i, connection);
+                    }
+                }
+            }
+            Packet::free(p);
+            return ;
+        }
+    }
+    //End RPI
+    //we cast to this frame because all management frame start with a type
+    mac802_16_dl_map_frame *frame = (mac802_16_dl_map_frame*) p->accessdata();
+
+    switch (frame->type) {
+    case MAC_DL_MAP:
+    {
+        getMap()->setStarttime (NOW-HDR_CMN(p)->txtime());
+        debug2 ("SS MAC_DL_MAP At %f frame start at %f\n", NOW, getMap()->getStarttime());
+
+        process_dl_map (frame);
+
+        //collect receive signal strength stats
+        PeerNode *peer = getPeerNode_head();
+        if (peer) { //it is possible that during a scan the peer is removed if switching channel after processing the dl_map
+            peer->getStatWatch()->update(10*log10(p->txinfo_.RxPr*1e3));
+            debug ("At %f in Mac %d weighted RXThresh: %e rxp average %e lgd %d\n", NOW, index_, macmib_.lgd_factor_*macmib_.RXThreshold_, pow(10,peer->getStatWatch()->average()/10)/1e3);
+            double avg_w = pow(10,(peer->getStatWatch()->average()/10))/1e3;
+
+            if ( avg_w < (macmib_.lgd_factor_*macmib_.RXThreshold_)) {
+                if (state_==MAC802_16_CONNECTED) {
+#ifdef USE_802_21
+                    if (mih_) {
+                        double probability = ((macmib_.lgd_factor_*macmib_.RXThreshold_)-avg_w)/((macmib_.lgd_factor_*macmib_.RXThreshold_)-macmib_.RXThreshold_);
+                        Mac::send_link_going_down (addr(), peer->getAddr(), -1, (int)(100*probability), LGD_RC_LINK_PARAM_DEGRADING, eventId_++);
+                    } else {
+#endif
+                        if (!peer->isGoingDown ()) { //when we don't use 802.21, we only want to send the scan request once
+                            link_scan (NULL); //replaced send_scan_request (); so it checks for pending requests
+                        }
+#ifdef USE_802_21
+                    }
+#endif
+                    peer->setGoingDown (true);
+                }
+            }
+            else {
+                if (peer->isGoingDown()) {
+#ifdef USE_802_21
+                    Mac::send_link_rollback (addr(), peer->getAddr(), eventId_-1);
+#endif
+                    peer->setGoingDown (false);
+                }
+            }
+        }
+        break;
+    }
+    case MAC_DCD:
+        debug2 ("At SS MAC_DCD \n");
+        process_dcd ((mac802_16_dcd_frame*)frame);
+        break;
+    case MAC_UL_MAP:
+        debug2 ("At SS MAC_UL_MAP \n");
+        process_ul_map ((mac802_16_ul_map_frame*)frame);
+        break;
+    case MAC_UCD:
+        debug2 ("At SS MAC_UCD \n");
+        process_ucd ((mac802_16_ucd_frame*)frame);
+        break;
+    case MAC_RNG_RSP:
+        debug2 ("At SS MAC_RNG_RSP \n");
+        process_ranging_rsp ((mac802_16_rng_rsp_frame*) frame);
+        break;
+    case MAC_REG_RSP:
+        debug2 ("At SS MAC_REG_RSP \n");
+        process_reg_rsp ((mac802_16_reg_rsp_frame*) frame);
+        break;
+    case MAC_MOB_SCN_RSP:
+        process_scan_rsp ((mac802_16_mob_scn_rsp_frame *) frame);
+        break;
+    case MAC_MOB_BSHO_RSP:
+        process_bsho_rsp ((mac802_16_mob_bsho_rsp_frame *) frame);
+        break;
+    case MAC_MOB_NBR_ADV:
+        process_nbr_adv ((mac802_16_mob_nbr_adv_frame *) frame);
+        break;
+    case MAC_DSA_REQ:
+    case MAC_DSA_RSP:
+    case MAC_DSA_ACK:
+        serviceFlowHandler_->process (p);  // rpi changed pktRx_ to p, coz pktRx_ is not in this scope anymore.
+        break;
+    default:
+        debug ("unknown packet in SS %d\n", addr());
+        //exit (0);
+    }
 }
