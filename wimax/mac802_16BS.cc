@@ -535,788 +535,7 @@ void Mac802_16BS::sendUp (Packet *p)
 
 }
 
-/**
- * Process the fully received packet
- */
-void Mac802_16BS::receive (Packet *pktRx_)
-{
-    assert (pktRx_);
-    struct hdr_cmn *ch = HDR_CMN(pktRx_);
-    hdr_mac802_16 *wimaxHdr;
-    wimaxHdr = HDR_MAC802_16(pktRx_);
 
-    //cdma_flag => 1 (bw-req), 2 (initial-ranging-req)
-    int cdma_flag = 0;
-
-
-    debug10 ("At %f (BS) in Mac %d, RECEIVE, packet received (type :%s)\n", NOW, index_, packet_info.name(ch->ptype()));
-    debug10 (" phyinfo header - symbol offset :%d, numsymbol :%d\n", wimaxHdr->phy_info.OFDMSymbol_offset,wimaxHdr->phy_info.num_OFDMSymbol);
-    if (ch->ptype()==PT_MAC) {
-        if (HDR_MAC802_16(pktRx_)->header.ht == 0) {
-            if ((mac802_16_dl_map_frame*) pktRx_->accessdata() != NULL)
-                debug10 (" generic mngt :%d\n", ((mac802_16_dl_map_frame*) pktRx_->accessdata())->type);
-        } else {
-            hdr_mac802_16 *wimaxHdr_tmp = HDR_MAC802_16(pktRx_);
-            gen_mac_header_t header_tmp = wimaxHdr_tmp->header;
-            cdma_req_header_t *req_tmp;
-            req_tmp = (cdma_req_header_t *)&header_tmp;
-
-            //int cid = header_tmp.cid;
-            int cid = req_tmp->cid;
-//      debug2 ("CON1 :%d\n", cid);
-            Connection *con_tmp = connectionManager_->get_connection (cid, IN_CONNECTION);
-//      debug2 ("CON1 :%d\n", con_tmp->get_cid());
-
-            if (req_tmp->type == 0x3 && con_tmp!=NULL) {
-                debug (" cdma_bw_req code :%d, top :%d, ssid :%d\n", req_tmp->code, req_tmp->top, req_tmp->br);
-                cdma_flag = 1;
-                debug10 ("At %f Connection %d, old :%d, set to 1\n", NOW, con_tmp->get_cid(), con_tmp->getCDMA());
-
-                con_tmp->setCDMA(1);
-                con_tmp->setCDMA_code(req_tmp->code);
-                con_tmp->setCDMA_top(req_tmp->top);
-                Packet::free(pktRx_);
-                return;
-            } else if (req_tmp->type == 0x2 && con_tmp!=NULL) {
-                debug (" cdma_init_req code :%d, top :%d, ssid :%d\n", req_tmp->code, req_tmp->top, req_tmp->br);
-                cdma_flag = 2;
-                debug10 ("At %f Connection %d, old :%d, set to 2\n", NOW, con_tmp->get_cid(), con_tmp->getCDMA());
-
-                con_tmp->setCDMA(2);
-                con_tmp->setCDMA_SSID_FLAG(req_tmp->br, 2);
-                con_tmp->setCDMA_SSID_SSID(req_tmp->br, req_tmp->br);
-                con_tmp->setCDMA_SSID_CODE(req_tmp->br, req_tmp->code);
-                con_tmp->setCDMA_SSID_TOP(req_tmp->br, req_tmp->top);
-                con_tmp->setCDMA_SSID_CID(req_tmp->br, con_tmp->get_cid());
-                con_tmp->setCDMA_code(0);
-                con_tmp->setCDMA_top(0);
-                reg_SS_number++;
-                Packet::free(pktRx_);
-                return;
-            } else {
-                debug (" bwreq\n");
-            }
-        }
-
-    } else {
-        debug10 (" unknown => %s\n",  packet_info.name(ch->ptype()));
-    }
-
-    // commenting here to chk without collision start
-
-    if ( (wimaxHdr->phy_info.OFDMSymbol_offset == 0 && wimaxHdr->phy_info.num_OFDMSymbol == 0) || wimaxHdr->header.cid == BROADCAST_CID)  // this kind of packets are treated diff(OFDM types) basically it a bw req packet.
-    {
-        if (ch->error())
-        {
-            if (collision_) {
-                debug2 ("\t drop new pktRx..collision\n");
-                drop (pktRx_, "COL");
-                collision_ = false;
-            }
-            else {
-                debug2("\t error in the packet, the Mac does not process\n");
-                Packet::free(pktRx_);
-            }
-
-            //update drop stat
-            update_watch (&loss_watch_, 1);
-            contPktRxing_ = false;
-            pktRx_ = NULL;
-            return;
-        }
-        //else
-        contPktRxing_ = false;
-    }
-    else {   //bwreq packet treatment else
-
-        //collision_ = false; // bwreq packet recvd , so no packet being transmitted.
-        //drop the packet if corrupted
-        if (ch->error()) {
-            //  if (collision_) {
-            //   debug2 ("\t drop new pktRx..collision\n");
-            addPowerinfo(wimaxHdr, 0.0,true);
-            //   drop (pktRx_, "COL");
-            //   collision_ = false;
-            // } else {
-            debug2("error in the packet, the Mac does not process");
-            //  addPowerinfo(wimaxHdr, 0.0,false);  // when we drop or discard a packet we have to reinitialise the intpower array to 0.0 , which shows tht there is no packet being recvd over the symbols and subcarriers.   // interference initialisation not reqd cause it is initialised whenever a packet is recvd
-            Packet::free(pktRx_);
-
-            //update drop stat
-            update_watch (&loss_watch_, 1);
-            pktRx_ = NULL;
-            return;
-        }
-
-        // chk here for collision of the packet which was received before the packet that caused actual collision, so we have to chk whether collision had occur on this packet or not. , and the collsion was caused
-
-        bool collision = false;
-
-        //collision = IsCollision(wimaxHdr, BASE_POWER);  // removed -replace it later
-
-        if (collision == true)
-        {
-            collision = false;
-            addPowerinfo(wimaxHdr, 0.0,true);
-            drop (pktRx_, "COL");
-            //update drop stat
-            update_watch (&loss_watch_, 1);
-            pktRx_ = NULL;
-            debug2("Drop this packet because of collision.\n");
-            return;
-        }
-
-        addPowerinfo(wimaxHdr, 0.0,true);
-
-        //commenting here to chk without collision  ends
-
-        // chk collision ends
-
-        //   SINR calcualtions
-
-        //removed for testing without Rxinpwr in packet header
-
-        int total_subcarriers=0;
-        //int num_data_subcarrier = getPhy()->getNumDataSubcarrier (UL_);
-        int num_data_subcarrier = getPhy()->getNumSubcarrier (UL_);
-        int num_subchannel      = getPhy()->getNumsubchannels (UL_);
-        int num_symbol_per_slot = getPhy()->getSlotLength (UL_);
-
-        // calculate the total subcarriers needed
-        if (wimaxHdr->phy_info.num_OFDMSymbol != 0)
-        {
-
-            //total_subcarriers = wimaxHdr->phy_info.num_subchannels * wimaxHdr->phy_info.num_OFDMSymbol * num_data_subcarrier ;
-
-            if (wimaxHdr->phy_info.num_OFDMSymbol % num_symbol_per_slot == 0)  // chk this condition , chk whether broacastcid reqd ir not.
-            {
-                if (wimaxHdr->phy_info.num_OFDMSymbol > num_symbol_per_slot)
-                {
-                    // for the first 3 symbols
-                    for (int i = wimaxHdr->phy_info.OFDMSymbol_offset ; i<  (wimaxHdr->phy_info.OFDMSymbol_offset + num_symbol_per_slot) ; i++)
-                        //   for(int j = (wimaxHdr->phy_info.subchannel_offset)*num_data_subcarrier ; j<num_subchannel*num_data_subcarrier ; j++ )
-                    {
-                        total_subcarriers += (num_subchannel*num_data_subcarrier) - ((wimaxHdr->phy_info.subchannel_offset)*num_data_subcarrier ) ;
-                    }
-                    // except the last 3 and first 3 whatever is thr
-                    for (int i = wimaxHdr->phy_info.OFDMSymbol_offset+num_symbol_per_slot ; i< (wimaxHdr->phy_info.OFDMSymbol_offset) + (wimaxHdr->phy_info.num_OFDMSymbol-num_symbol_per_slot) ; i++)
-                        //for(int j = 0 ; j<num_subchannel*num_data_subcarrier ; j++ )
-                    {
-                        total_subcarriers +=  num_subchannel*num_data_subcarrier;
-                    }
-
-                    // last 3
-                    for (int i = wimaxHdr->phy_info.OFDMSymbol_offset +wimaxHdr->phy_info.num_OFDMSymbol-num_symbol_per_slot ; i<  wimaxHdr->phy_info.OFDMSymbol_offset +wimaxHdr->phy_info.num_OFDMSymbol ; i++)
-                        //for(int j = 0 ; j<(wimaxHdr->phy_info.num_subchannels%num_subchannel)*num_data_subcarrier ; j++ )
-                    {
-                        total_subcarriers += ((wimaxHdr->phy_info.num_subchannels - (num_subchannel - (wimaxHdr->phy_info.subchannel_offset)) )%num_subchannel)*num_data_subcarrier;
-                    }
-                }
-                else
-                {
-
-                    for (int i = wimaxHdr->phy_info.OFDMSymbol_offset ; i<  (wimaxHdr->phy_info.OFDMSymbol_offset + num_symbol_per_slot) ; i++)
-                        //for(int j = (wimaxHdr->phy_info.subchannel_offset)*num_data_subcarrier ; j<wimaxHdr->phy_info.num_subchannels*num_data_subcarrier ; j++ )
-                    {
-                        total_subcarriers += wimaxHdr->phy_info.num_subchannels*num_data_subcarrier ;//-  (wimaxHdr->phy_info.subchannel_offset)*num_data_subcarrier ;
-                    }
-                }
-            }
-            else
-            {
-                // for the first num_symbol_per_slot symbols
-                if (wimaxHdr->phy_info.num_OFDMSymbol > 1)
-                {
-                    for (int i = wimaxHdr->phy_info.OFDMSymbol_offset ; i<  (wimaxHdr->phy_info.OFDMSymbol_offset + 1) ; i++)
-                        //   for(int j = (wimaxHdr->phy_info.subchannel_offset)*num_data_subcarrier ; j<num_subchannel*num_data_subcarrier ; j++ )
-                    {
-                        total_subcarriers += num_subchannel*num_data_subcarrier - (wimaxHdr->phy_info.subchannel_offset)*num_data_subcarrier ;
-                    }
-                    // except the last num_symbol_per_slot and first num_symbol_per_slot whatever is thr
-
-                    for (int i = wimaxHdr->phy_info.OFDMSymbol_offset+1 ; i< (wimaxHdr->phy_info.OFDMSymbol_offset) + (wimaxHdr->phy_info.num_OFDMSymbol-1) ; i++)
-                        //for(int j = 0 ; j<num_subchannel*num_data_subcarrier ; j++ )
-                    {
-                        total_subcarriers +=  num_subchannel*num_data_subcarrier ;
-                    }
-
-                    // last num_symbol_per_slot
-                    for (int i = wimaxHdr->phy_info.OFDMSymbol_offset +wimaxHdr->phy_info.num_OFDMSymbol-1 ; i< wimaxHdr->phy_info.OFDMSymbol_offset +wimaxHdr->phy_info.num_OFDMSymbol ; i++)
-                        // for(int j = 0 ; j<(wimaxHdr->phy_info.num_subchannels%num_subchannel)*num_data_subcarrier ; j++ )
-                    {
-                        total_subcarriers += ((wimaxHdr->phy_info.num_subchannels - (num_subchannel - (wimaxHdr->phy_info.subchannel_offset)) )%num_subchannel)*num_data_subcarrier ;
-                    }
-
-                }
-                else
-                {
-
-                    for (int i = wimaxHdr->phy_info.OFDMSymbol_offset ; i<  (wimaxHdr->phy_info.OFDMSymbol_offset + 1) ; i++)
-                        // for(int j = (wimaxHdr->phy_info.subchannel_offset)*num_data_subcarrier ; j<wimaxHdr->phy_info.num_subchannels*num_data_subcarrier ; j++ )
-                    {
-                        total_subcarriers +=    wimaxHdr->phy_info.num_subchannels*num_data_subcarrier;// - (wimaxHdr->phy_info.subchannel_offset)*num_data_subcarrier ;
-                    }
-
-                }
-
-            }
-        }
-        else
-            total_subcarriers = wimaxHdr->phy_info.num_subchannels * num_data_subcarrier ;
-
-        // total subcarrier calculation ends
-
-        debug2(" total_subcarriers = %d \n", total_subcarriers);
-
-        double *signalpower = (double *) new double [total_subcarriers] ;
-        double *interferencepower = (double *) new double [total_subcarriers];
-        double *SINR = (double *) new double [total_subcarriers];
-        for (int i = 0; i< total_subcarriers ; i++)
-        {
-            SINR[i] = 0.0;
-            signalpower[i] = 0.0;
-            interferencepower[i] = 0.0;
-        }
-
-        int n=0,m=0;
-
-        if (wimaxHdr->phy_info.num_OFDMSymbol % num_symbol_per_slot == 0)  // chk this condition
-        {
-            if (wimaxHdr->phy_info.num_OFDMSymbol > num_symbol_per_slot)
-            {
-                // for the first num_symbol_per_slot symbols
-                for (int i = wimaxHdr->phy_info.OFDMSymbol_offset ; i<  (wimaxHdr->phy_info.OFDMSymbol_offset + num_symbol_per_slot) ; i++)
-                    for (int j = (wimaxHdr->phy_info.subchannel_offset)*num_data_subcarrier ; j<num_subchannel*num_data_subcarrier ; j++ )
-                    {
-                        interferencepower[n++]= intpower_[i][j] + BASE_POWER /*+ pktRx_->txinfo_.RxIntPr[i][j]*/;
-                        signalpower[m++]= pktRx_->txinfo_.RxPr_OFDMA[j];
-                    }
-                // except the last num_symbol_per_slot and first num_symbol_per_slot whatever is thr
-                for (int i = wimaxHdr->phy_info.OFDMSymbol_offset+num_symbol_per_slot ; i< (wimaxHdr->phy_info.OFDMSymbol_offset) + (wimaxHdr->phy_info.num_OFDMSymbol-num_symbol_per_slot) ; i++)
-                    for (int j = 0 ; j<num_subchannel*num_data_subcarrier ; j++ )
-                    {
-                        interferencepower[n++]= intpower_[i][j] + BASE_POWER /*+ pktRx_->txinfo_.RxIntPr[i][j]*/;
-                        signalpower[m++]= pktRx_->txinfo_.RxPr_OFDMA[j];
-                    }
-
-                // last num_symbol_per_slot
-                for (int i = wimaxHdr->phy_info.OFDMSymbol_offset +wimaxHdr->phy_info.num_OFDMSymbol-num_symbol_per_slot ; i<  wimaxHdr->phy_info.OFDMSymbol_offset +wimaxHdr->phy_info.num_OFDMSymbol ; i++)
-                    for (int j = 0 ; j<((wimaxHdr->phy_info.num_subchannels - (num_subchannel - (wimaxHdr->phy_info.subchannel_offset)) )%num_subchannel)*num_data_subcarrier; j++ )
-                    {
-                        interferencepower[n++]= intpower_[i][j] + BASE_POWER /*+ pktRx_->txinfo_.RxIntPr[i][j]*/;
-                        signalpower[m++]= pktRx_->txinfo_.RxPr_OFDMA[j];
-                    }
-            }
-            else
-            {
-
-                for (int i = wimaxHdr->phy_info.OFDMSymbol_offset ;
-                        i<  (wimaxHdr->phy_info.OFDMSymbol_offset + num_symbol_per_slot) ; i++)
-
-                    for (int j = (wimaxHdr->phy_info.subchannel_offset)*num_data_subcarrier ;
-                            j<(((wimaxHdr->phy_info.subchannel_offset)*num_data_subcarrier) + wimaxHdr->phy_info.num_subchannels*num_data_subcarrier);
-                            j++ )
-                    {
-                        interferencepower[n++]= intpower_[i][j] + BASE_POWER /*+ pktRx_->txinfo_.RxIntPr[i][j]*/;
-                        signalpower[m++]= pktRx_->txinfo_.RxPr_OFDMA[j];
-                    }
-            }
-        }
-
-        else
-
-        {
-            // for the first num_symbol_per_slot symbols
-            if (wimaxHdr->phy_info.num_OFDMSymbol > 1)
-            {
-                for (int i = wimaxHdr->phy_info.OFDMSymbol_offset ; i<  (wimaxHdr->phy_info.OFDMSymbol_offset + 1) ; i++)
-                    for (int j = (wimaxHdr->phy_info.subchannel_offset)*num_data_subcarrier ; j<num_subchannel*num_data_subcarrier ; j++ )
-                    {
-                        interferencepower[n++]= intpower_[i][j] + BASE_POWER /*+ pktRx_->txinfo_.RxIntPr[i][j]*/;
-                        signalpower[m++]= pktRx_->txinfo_.RxPr_OFDMA[j];
-                    }
-
-                // except the last num_symbol_per_slot and first num_symbol_per_slot whatever is thr
-                for (int i = (wimaxHdr->phy_info.OFDMSymbol_offset+1) ; i<  (wimaxHdr->phy_info.OFDMSymbol_offset) + (wimaxHdr->phy_info.num_OFDMSymbol-1) ; i++)
-                    for (int j = 0 ; j<num_subchannel*num_data_subcarrier ; j++ )
-                    {
-                        interferencepower[n++]= intpower_[i][j] + BASE_POWER /*+ pktRx_->txinfo_.RxIntPr[i][j]*/;
-                        signalpower[m++]= pktRx_->txinfo_.RxPr_OFDMA[j];
-                    }
-
-                // last num_symbol_per_slot
-                for (int i = wimaxHdr->phy_info.OFDMSymbol_offset +wimaxHdr->phy_info.num_OFDMSymbol-1 ; i< wimaxHdr->phy_info.OFDMSymbol_offset +wimaxHdr->phy_info.num_OFDMSymbol ; i++)
-                    for (int j = 0 ; j<((wimaxHdr->phy_info.num_subchannels - (num_subchannel - (wimaxHdr->phy_info.subchannel_offset)) )%num_subchannel)*num_data_subcarrier; j++ )
-                    {
-                        interferencepower[n++]= intpower_[i][j] + BASE_POWER /*+ pktRx_->txinfo_.RxIntPr[i][j]*/;
-                        signalpower[m++]= pktRx_->txinfo_.RxPr_OFDMA[j];
-                    }
-
-            }
-            else
-            {
-                for (int i = wimaxHdr->phy_info.OFDMSymbol_offset ; i<  (wimaxHdr->phy_info.OFDMSymbol_offset + 1) ; i++)
-                    for (int j = (wimaxHdr->phy_info.subchannel_offset)*num_data_subcarrier ; j<(((wimaxHdr->phy_info.subchannel_offset)*num_data_subcarrier) + wimaxHdr->phy_info.num_subchannels*num_data_subcarrier) ; j++ )
-                    {
-                        interferencepower[n++]= intpower_[i][j] + BASE_POWER /*+ pktRx_->txinfo_.RxIntPr[i][j]*/;
-                        signalpower[m++]= pktRx_->txinfo_.RxPr_OFDMA[j];
-                    }
-            }
-        }
-
-        int counter = 0;
-        for (int k = 0; k < total_subcarriers; k++)
-        {
-            if ( signalpower[k] > DOUBLE_INT_ZERO) // not equals to zero
-            {
-                SINR[counter] =  signalpower[k]/interferencepower[counter];
-                counter++;
-            }
-        }
-        debug2("in MAC BS, [%d] subcarriers signal power are calculated.\n ", counter);
-
-
-        double SIR = 0.0;
-        //debug2("In MAC BS: the total number of subcarrier/3 is [%d]\n", total_subcarriers/3);
-
-
-        //process packet
-        gen_mac_header_t header = wimaxHdr->header;
-        OFDMAPhy *phy = getPhy();
-
-        //debug2(" checking for intereference power \n" );
-
-        // BLER calculation
-
-        GlobalParams_Wimax* global ;
-
-        global =  GlobalParams_Wimax::Instance();
-
-        int num_of_slots,num_of_complete_block,max_block_size,last_block_size , index, num_subcarrier_block ;
-
-        double BLER= 0.0, beta=0.0, eesm_sum = 0.0, rand1 =0.0;
-
-        num_of_slots = (int) ceil((double)ch->size() / (double)phy->getSlotCapacity(wimaxHdr->phy_info.modulation_, UL_));
-
-        max_block_size=phy->getMaxBlockSize(wimaxHdr->phy_info.modulation_);   // get max  block size in number of slots
-
-        last_block_size = num_of_slots % max_block_size;
-
-        num_of_complete_block = (int) floor(num_of_slots / max_block_size);
-
-        int ITU_PDP = getITU_PDP ();
-
-        bool pkt_error = FALSE;
-
-        debug2(" num of complete blocks = %d , ITU_PDP = %d, num of slots = %d, max block size = %d, last block size = %d \n" , num_of_complete_block, ITU_PDP, num_of_slots, max_block_size, last_block_size );
-
-        //max_block_size = 2;     // testing for results. remove it.
-        //last_block_size = 2;
-
-        if (num_of_complete_block == 0) {
-            //num_of_complete_block =1;
-            index =  phy->getMCSIndex( wimaxHdr->phy_info.modulation_ ,  last_block_size);
-
-            beta = global->Beta[ITU_PDP][index];
-            debug2(" beta = %.2f = \n index = %d\n" , beta,index );
-
-            num_subcarrier_block = num_symbol_per_slot * getPhy()->getNumSubcarrier (UL_) * last_block_size;
-
-            /* if(num_subcarrier_block > total_subcarriers) num_subcarrier_block = total_subcarriers;
-            for( int i = 0; i< num_subcarrier_block ; i++)
-            {
-            debug2( " SINR (%d) = %g , eesm_sum = %g %g\n", i, SINR[i], eesm_sum, exp(-(SINR[i]/beta)));
-            eesm_sum = eesm_sum + exp( -(SINR[i]/beta));
-            }*/
-
-            //printf("\n n [%d] --- counter [%d]\n",n, counter);
-            for (int i=0; i<counter; i++)
-            {
-                eesm_sum = eesm_sum + exp( -(SINR[i]/beta));
-            }
-
-
-            if (num_subcarrier_block == 0) {
-                fprintf(stderr, "ERROR: num_subcarrier_block = 0\n");
-                exit (1);
-            }
-            if (eesm_sum >= BASE_POWER) {
-                SIR =  (-beta) * log(eesm_sum/counter);
-                SIR=10*log10(SIR);
-                BLER = global->TableLookup(index, SIR);
-            } else {
-                //eesm = 0 when SINR is large (MS close to BS) and exp returns 0
-                BLER = 0;
-            }
-            debug2(" BLER-BS one block = %.6f = \n" , BLER );
-
-            int rand_num = ((rand() % 100) +1 ) ;
-            // debug2(" random num = %d = \n" , rand_num );
-            rand1 = rand_num/100.00;
-
-            //if (!phymib_.disableInterference && BLER > rand1)
-            if (!phymib_.disableInterference && BLER > 0.96)
-                pkt_error = TRUE;
-
-            // getBLER(wimaxHdr->phy_info.modulation_, SINR, last_block_size);
-        }
-        else {
-
-            // First the complete blocks are checked fro error
-
-            index =  phy->getMCSIndex( wimaxHdr->phy_info.modulation_ ,  max_block_size);
-
-            beta = global->Beta[ITU_PDP][index];
-
-            debug2(" beta = %.2f index = %d \n" , beta,index );
-
-            num_subcarrier_block = num_symbol_per_slot * getPhy()->getNumSubcarrier (UL_) * max_block_size;
-
-
-            if (num_subcarrier_block > total_subcarriers) num_subcarrier_block = total_subcarriers;
-
-            /* for( int i = 0; i< num_subcarrier_block ; i++)
-            eesm_sum = eesm_sum + exp( -(SINR[i]/beta));*/
-
-            for (int i=0; i<counter; i++)
-            {
-                eesm_sum = eesm_sum + exp( -(SINR[i]/beta));
-            }
-
-
-            if (num_subcarrier_block == 0) {
-                fprintf(stderr, "ERROR: num_subcarrier_block = 0\n");
-                exit (1);
-            }
-            if (eesm_sum >=BASE_POWER) {
-                //SIR =  (-beta) * log( eesm_sum/(num_subcarrier_block) );
-                SIR =  (-beta) * log(eesm_sum/counter);
-                SIR=10*log10(SIR);
-                debug2(" SIR-BS = %.6f = \n" , SIR );
-                BLER = global->TableLookup(index, SIR);
-            } else {
-                //eesm = 0 when SINR is large (MS close to BS) and exp returns 0
-                BLER = 0;
-            }
-            debug2(" BLER-BS complete blocks = %.6f = \n" , BLER );
-
-            int rand_num = ((rand() % 100) +1 ) ;
-
-            //debug2(" random num = %d = \n" , rand_num );
-
-            rand1 = rand_num/100.00;
-
-            //if (!phymib_.disableInterference && BLER > rand1)
-            if (!phymib_.disableInterference && BLER > 0.96)
-                pkt_error = TRUE;
-
-            // Chk if thr is any last block, compute whether it is in error or not.
-            if (last_block_size > 0)
-            {
-                eesm_sum=0;
-                index =  phy->getMCSIndex( wimaxHdr->phy_info.modulation_ ,  last_block_size);
-
-                beta = global->Beta[ITU_PDP][index];
-
-                num_subcarrier_block = num_symbol_per_slot * getPhy()->getNumSubcarrier (UL_) * last_block_size;
-
-                if (num_subcarrier_block > total_subcarriers) num_subcarrier_block = total_subcarriers;
-
-
-                /*	  for( int i = 0; i< num_subcarrier_block ; i++)
-                  eesm_sum = eesm_sum + exp( -(SINR[i]/beta));*/
-
-                for (int i=0; i<counter; i++)
-                {
-                    eesm_sum = eesm_sum + exp( -(SINR[i]/beta));
-                }
-
-
-                if (num_subcarrier_block == 0) {
-                    fprintf(stderr, "ERROR: num_subcarrier_block = 0\n");
-                    exit (1);
-                }
-                if (eesm_sum >=BASE_POWER) {
-                    //SIR =  (-beta) * log( eesm_sum/(num_subcarrier_block) );
-                    SIR =  (-beta) * log(eesm_sum/counter);
-                    SIR=10*log10(SIR);
-                    debug2(" SIR-BS = %.6f = \n" , SIR );
-                    BLER = global->TableLookup(index, SIR);
-                } else {
-                    //eesm = 0 when SINR is large (MS close to BS) and exp returns 0
-                    BLER = 0;
-                }
-
-#if 0
-                int rand_num = ((rand() % 100) +1 ) ;
-
-                //debug2(" random num = %d = \n" , rand_num );
-
-                rand1 = rand_num/100.00;
-
-                if (!phymib_.disableInterference && BLER > rand1)
-                    pkt_error = TRUE;
-#endif
-                if (!phymib_.disableInterference && BLER > 0.96)
-                    pkt_error = TRUE;
-            }
-
-
-        }
-
-        //debug2( " BLER = %.25f" , BLER);
-
-        // deleting dynamic allocations  //removed for testing without Rxinpwr in packet header
-
-        delete [] SINR;
-        delete [] signalpower;
-        delete [] interferencepower;
-
-
-        if ( pkt_error == TRUE)
-
-        {
-            addPowerinfo(wimaxHdr, 0.0,true);
-
-            debug2("error in the packet, drop this packet. the Mac does not process\n");
-            Packet::free(pktRx_);
-            pkt_error = FALSE;
-            //update drop stat
-            update_watch (&loss_watch_, 1);
-            pktRx_ = NULL;
-            return;
-
-        }
-
-
-
-        //removed for testing without Rxinpwr in packet header
-
-        //BLER calcualtion ends
-
-
-
-    } //bwreq packet treatment else ends here.  replace { when testing ends
-
-
-    addPowerinfo(wimaxHdr, 0.0,true);
-    // normal packet processing starts.
-
-    debug2 ("normal packet processing\n");
-
-    gen_mac_header_t header = wimaxHdr->header;
-    int cid = header.cid;
-    Connection *con = connectionManager_->get_connection (cid, IN_CONNECTION);
-    if (con==NULL)
-        return;
-
-    //update rx time of last packet received
-    PeerNode *peer;
-    if (type_ == STA_MN)
-        peer = getPeerNode_head(); //MN only has one peer
-    else
-        peer = con->getPeerNode(); //BS can have multiple peers
-
-    if (peer) {
-        peer->setRxTime (NOW);
-
-        //collect receive signal strength stats
-        if (pktRx_->txinfo_.RxPr*1e3 == 0) {
-            fprintf(stderr, "ERROR: pktRx_->txinfo_.RxPr*1e3 = 0\n");
-        }
-        peer->getStatWatch()->update(10*log10(pktRx_->txinfo_.RxPr*1e3));
-        //debug ("At %f in Mac %d weighted RXThresh: %e rxp average %e\n", NOW, index_, macmib_.lgd_factor_*macmib_.RXThreshold_, pow(10,peer->getStatWatch()->average()/10)/1e3);
-        double avg_w = pow(10,(peer->getStatWatch()->average()/10))/1e3;
-
-        if ( avg_w < (macmib_.lgd_factor_*macmib_.RXThreshold_)) {
-#ifdef USE_802_21
-            double probability = ((macmib_.lgd_factor_*macmib_.RXThreshold_)-avg_w)/((macmib_.lgd_factor_*macmib_.RXThreshold_)-macmib_.RXThreshold_);
-            Mac::send_link_going_down (peer->getAddr(), addr(), -1, (int)(100*probability), LGD_RC_LINK_PARAM_DEGRADING, eventId_++);
-#endif
-            if (peer->getPrimary(IN_CONNECTION)!=NULL) { //check if node registered
-                peer->setGoingDown (true);
-            }
-        }
-        else {
-            if (peer->isGoingDown()) {
-#ifdef USE_802_21
-                Mac::send_link_rollback (addr(), getPeerNode_head()->getAddr(), eventId_-1);
-#endif
-                peer->setGoingDown (false);
-            }
-        }
-    }
-
-    //this flag is used to update fragmentaion for piggybacking scenario
-    int flag_pig = 0;
-
-    //Process GM subheader (piggybacking)
-    int bw_update_dueto_gm = 0;
-    int more_bw = 0;
-    int old_bw = 0;
-    if (wimaxHdr->header.type_fbgm) {
-        more_bw = wimaxHdr->grant_subheader.piggyback_req;
-        old_bw = con->getBw();
-        flag_pig = 2;
-        debug10 ("BS: Piggybacking, At %f Connection %d, flag :%d, old_bw :%d, add_bw :%d\n", NOW, con->get_cid(), wimaxHdr->header.type_fbgm, con->getBw(), more_bw);
-        if (more_bw > old_bw) {
-            bw_update_dueto_gm = more_bw;
-            con->setBw(bw_update_dueto_gm);
-        }
-
-        debug10 ("    Final bw_update con->getBw :%d\n",con->getBw());
-
-    } else {
-        bw_update_dueto_gm = 0;
-    }
-    //End piggybacking process
-
-    //Begin RPI
-    // New function for reassembly will be implemented for ARQ, Fragmentation and Packing
-    if (con->getArqStatus () != NULL && con->getArqStatus ()->isArqEnabled() == 1
-            && con->isFragEnable () == true && con->isPackingEnable () == true
-            && HDR_CMN(pktRx_)->ptype()!=PT_MAC) {
-        process_mac_pdu_witharqfragpack(con, pktRx_);
-        update_throughput (&rx_data_watch_, 8*ch->size());
-        update_throughput (&rx_traffic_watch_, 8*ch->size());
-        return;
-    }
-    //End RPI
-
-    //process reassembly
-    debug2 ("Reading fragmentation flags: %d (%d) for CID %d\n", wimaxHdr->header.type_frag, wimaxHdr->header.type_frag & 0x1, cid);
-
-    if (wimaxHdr->header.type_frag) {
-        bool drop_pkt = true;
-        bool frag_error = false;
-        debug2 ("\tfrag type = %d (type noflag :%d, first :%d, cont :%d, last :%d)\n", wimaxHdr->frag_subheader.fc & 0x3, FRAG_NOFRAG, FRAG_FIRST,FRAG_CONT, FRAG_LAST);
-        switch (wimaxHdr->frag_subheader.fc & 0x3) {
-        case FRAG_NOFRAG:
-            if (con->getFragmentationStatus()!=FRAG_NOFRAG)
-                con->updateFragmentation (FRAG_NOFRAG, 0, 0); //reset
-            drop_pkt = false;
-            break;
-        case FRAG_FIRST:
-            //when it is the first fragment, it does not matter if we previously
-            //received other fragments, since we reset the information
-            assert (wimaxHdr->frag_subheader.fsn == 0);
-            debug2 ("\tReceived first fragment fsn :%d cid :%d", wimaxHdr->frag_subheader.fsn&0x7, cid);
-            if (con->getFragmentationStatus()!=FRAG_NOFRAG) {
-                debug2 ("...Error: expecting CONT or LAST\n");
-            } else {
-                debug2 ("...Ok\n");
-            }
-
-            if (wimaxHdr->header.type_fbgm) {
-                con->updateFragmentation (FRAG_FIRST, 0, ch->size()-(HDR_MAC802_16_SIZE+HDR_MAC802_16_FRAGSUB_SIZE+flag_pig));
-            } else {
-                con->updateFragmentation (FRAG_FIRST, 0, ch->size()-(HDR_MAC802_16_SIZE+HDR_MAC802_16_FRAGSUB_SIZE));
-            }
-
-            break;
-        case FRAG_CONT:
-            debug2 ("\tReceived cont fragment fsn :%d cid :%d", wimaxHdr->frag_subheader.fsn&0x7, cid);
-            if ( (con->getFragmentationStatus()!=FRAG_FIRST
-                    && con->getFragmentationStatus()!=FRAG_CONT)
-                    || ((wimaxHdr->frag_subheader.fsn&0x7) != (con->getFragmentNumber ()+1)%8) ) {
-                frag_error = true;
-                debug2 ("...Error: status :%d, fsn :%d, expected fsn :%d\n",
-                        con->getFragmentationStatus(), wimaxHdr->frag_subheader.fsn&0x7, (con->getFragmentNumber ()+1)%8);
-                con->updateFragmentation (FRAG_NOFRAG, 0, 0); //reset
-            } else {
-                debug2 ("...Ok\n");
-                if (wimaxHdr->header.type_fbgm) {
-                    con->updateFragmentation (FRAG_CONT, wimaxHdr->frag_subheader.fsn&0x7, con->getFragmentBytes()+ch->size()-(HDR_MAC802_16_SIZE+HDR_MAC802_16_FRAGSUB_SIZE+flag_pig));
-                } else {
-                    con->updateFragmentation (FRAG_CONT, wimaxHdr->frag_subheader.fsn&0x7, con->getFragmentBytes()+ch->size()-(HDR_MAC802_16_SIZE+HDR_MAC802_16_FRAGSUB_SIZE));
-                }
-            }
-            break;
-        case FRAG_LAST:
-            debug2 ("\tReceived last fragment fsn :%d cid :%d", wimaxHdr->frag_subheader.fsn&0x7, cid);
-            if ( (con->getFragmentationStatus()==FRAG_FIRST || con->getFragmentationStatus()==FRAG_CONT)
-                    && ((wimaxHdr->frag_subheader.fsn&0x7) == (con->getFragmentNumber ()+1)%8) ) {
-                ch->size() += con->getFragmentBytes()-HDR_MAC802_16_FRAGSUB_SIZE;
-                drop_pkt = false;
-                debug2 ("...Ok\n");
-            } else {
-                debug2 ("...Error: status :%d (nofrag :%d, first :%d, cont :%d, last :%d), fsn :%d, expected fsn :%d\n",
-                        con->getFragmentationStatus(), FRAG_NOFRAG, FRAG_FIRST, FRAG_CONT, FRAG_LAST ,wimaxHdr->frag_subheader.fsn&0x7, (con->getFragmentNumber ()+1)%8);
-                frag_error = true;
-            }
-            con->updateFragmentation (FRAG_NOFRAG, 0, 0); //reset
-            break;
-        default:
-            fprintf (stderr,"Error, unknown fragmentation type\n");
-            exit (-1);
-        }
-        //if we got an error, or it is a fragment that is not the last, free the packet
-        if (drop_pkt) {
-            if (frag_error) {
-                //update drop stat
-                update_watch (&loss_watch_, 1);
-                debug10 ("Drop packets FRG error\n");
-                drop (pktRx_, "FRG"); //fragmentation error
-            } else {
-                //silently discard this fragment.
-                Packet::free(pktRx_);
-            }
-            pktRx_=NULL;
-            return;
-        }
-    }
-
-    //Check if this is a bandwidth request
-    hdr_mac802_16 *wimaxHdr_tmp = HDR_MAC802_16(pktRx_);
-    gen_mac_header_t header_tmp = wimaxHdr_tmp->header;
-
-    bw_req_header_t *req_tmp;
-    req_tmp = (bw_req_header_t *)&header_tmp;
-
-    if (header.ht == 0) {
-        if ( (req_tmp->type == 0x3) || (req_tmp->type == 0x2) ) {
-            debug10 ("Impossible; PANIC\n");
-
-#ifndef BWREQ_PATCH
-        } else {
-            if (con->getBw() > 0) {
-                debug10 ("setBW left-over At %f Connection %d, old=%d, rcv=%d, left=%d\n", NOW, con->get_cid(), con->getBw(), ch->size(), con->getBw()-ch->size());
-                if (con->getBw()-ch->size() >0) {
-                    con->setBw(con->getBw()-ch->size());
-                } else {
-                    con->setBw(0);
-                }
-            }
-#endif
-        }
-    }
-    //end checking bw-req packet
-
-    /* => Old
-    //check if this is a bandwidth request
-    if (header.ht == 0 && con->getBw() >0) {
-    debug2 ("At %f Connection %d, old=%d, rcv=%d, left=%d\n", NOW, con->get_cid(), con->getBw(), ch->size(), con->getBw()-ch->size());
-    con->setBw(con->getBw()-ch->size());
-    }
-    */
-
-    //We check if it is a MAC packet or not
-    if (HDR_CMN(pktRx_)->ptype()==PT_MAC) {
-        process_mac_packet (con, pktRx_);
-        update_throughput (&rx_traffic_watch_, 8*ch->size());
-        mac_log(pktRx_);
-        Packet::free(pktRx_);
-    }
-    else {
-        update_throughput (&rx_data_watch_, 8*ch->size());
-        update_throughput (&rx_traffic_watch_, 8*ch->size());
-        ch->size() -= HDR_MAC802_16_SIZE;
-        uptarget_->recv(pktRx_, (Handler*) 0);
-    }
-
-    update_watch (&loss_watch_, 0);
-    pktRx_=NULL;
-}
 
 //Begin RPI
 /**
@@ -2744,3 +1963,785 @@ bool Mac802_16BS::IsCollision (const hdr_mac802_16 *wimaxHdr,double power_subcha
 }
 
 
+/**
+ * Process the fully received packet
+ */
+void Mac802_16BS::receive (Packet *pktRx_)
+{
+    assert (pktRx_);
+    struct hdr_cmn *ch = HDR_CMN(pktRx_);
+    hdr_mac802_16 *wimaxHdr;
+    wimaxHdr = HDR_MAC802_16(pktRx_);
+
+    //cdma_flag => 1 (bw-req), 2 (initial-ranging-req)
+    int cdma_flag = 0;
+
+
+    debug10 ("At %f (BS) in Mac %d, RECEIVE, packet received (type :%s)\n", NOW, index_, packet_info.name(ch->ptype()));
+    debug10 (" phyinfo header - symbol offset :%d, numsymbol :%d\n", wimaxHdr->phy_info.OFDMSymbol_offset,wimaxHdr->phy_info.num_OFDMSymbol);
+    if (ch->ptype()==PT_MAC) {
+        if (HDR_MAC802_16(pktRx_)->header.ht == 0) {
+            if ((mac802_16_dl_map_frame*) pktRx_->accessdata() != NULL)
+                debug10 (" generic mngt :%d\n", ((mac802_16_dl_map_frame*) pktRx_->accessdata())->type);
+        } else {
+            hdr_mac802_16 *wimaxHdr_tmp = HDR_MAC802_16(pktRx_);
+            gen_mac_header_t header_tmp = wimaxHdr_tmp->header;
+            cdma_req_header_t *req_tmp;
+            req_tmp = (cdma_req_header_t *)&header_tmp;
+
+            //int cid = header_tmp.cid;
+            int cid = req_tmp->cid;
+//      debug2 ("CON1 :%d\n", cid);
+            Connection *con_tmp = connectionManager_->get_connection (cid, IN_CONNECTION);
+//      debug2 ("CON1 :%d\n", con_tmp->get_cid());
+
+            if (req_tmp->type == 0x3 && con_tmp!=NULL) {
+                debug (" cdma_bw_req code :%d, top :%d, ssid :%d\n", req_tmp->code, req_tmp->top, req_tmp->br);
+                cdma_flag = 1;
+                debug10 ("At %f Connection %d, old :%d, set to 1\n", NOW, con_tmp->get_cid(), con_tmp->getCDMA());
+
+                con_tmp->setCDMA(1);
+                con_tmp->setCDMA_code(req_tmp->code);
+                con_tmp->setCDMA_top(req_tmp->top);
+                Packet::free(pktRx_);
+                return;
+            } else if (req_tmp->type == 0x2 && con_tmp!=NULL) {
+                debug (" cdma_init_req code :%d, top :%d, ssid :%d\n", req_tmp->code, req_tmp->top, req_tmp->br);
+                cdma_flag = 2;
+                debug10 ("At %f Connection %d, old :%d, set to 2\n", NOW, con_tmp->get_cid(), con_tmp->getCDMA());
+
+                con_tmp->setCDMA(2);
+                con_tmp->setCDMA_SSID_FLAG(req_tmp->br, 2);
+                con_tmp->setCDMA_SSID_SSID(req_tmp->br, req_tmp->br);
+                con_tmp->setCDMA_SSID_CODE(req_tmp->br, req_tmp->code);
+                con_tmp->setCDMA_SSID_TOP(req_tmp->br, req_tmp->top);
+                con_tmp->setCDMA_SSID_CID(req_tmp->br, con_tmp->get_cid());
+                con_tmp->setCDMA_code(0);
+                con_tmp->setCDMA_top(0);
+                reg_SS_number++;
+                Packet::free(pktRx_);
+                return;
+            } else {
+                debug (" bwreq\n");
+            }
+        }
+
+    } else {
+        debug10 (" unknown => %s\n",  packet_info.name(ch->ptype()));
+    }
+
+    // commenting here to chk without collision start
+
+    if ( (wimaxHdr->phy_info.OFDMSymbol_offset == 0 && wimaxHdr->phy_info.num_OFDMSymbol == 0) || wimaxHdr->header.cid == BROADCAST_CID)  // this kind of packets are treated diff(OFDM types) basically it a bw req packet.
+    {
+        if (ch->error())
+        {
+            if (collision_) {
+                debug2 ("\t drop new pktRx..collision\n");
+                drop (pktRx_, "COL");
+                collision_ = false;
+            }
+            else {
+                debug2("\t error in the packet, the Mac does not process\n");
+                Packet::free(pktRx_);
+            }
+
+            //update drop stat
+            update_watch (&loss_watch_, 1);
+            contPktRxing_ = false;
+            pktRx_ = NULL;
+            return;
+        }
+        //else
+        contPktRxing_ = false;
+    }
+    else {   //bwreq packet treatment else
+
+        //collision_ = false; // bwreq packet recvd , so no packet being transmitted.
+        //drop the packet if corrupted
+        if (ch->error()) {
+            //  if (collision_) {
+            //   debug2 ("\t drop new pktRx..collision\n");
+            addPowerinfo(wimaxHdr, 0.0,true);
+            //   drop (pktRx_, "COL");
+            //   collision_ = false;
+            // } else {
+            debug2("error in the packet, the Mac does not process");
+            //  addPowerinfo(wimaxHdr, 0.0,false);  // when we drop or discard a packet we have to reinitialise the intpower array to 0.0 , which shows tht there is no packet being recvd over the symbols and subcarriers.   // interference initialisation not reqd cause it is initialised whenever a packet is recvd
+            Packet::free(pktRx_);
+
+            //update drop stat
+            update_watch (&loss_watch_, 1);
+            pktRx_ = NULL;
+            return;
+        }
+
+        // chk here for collision of the packet which was received before the packet that caused actual collision, so we have to chk whether collision had occur on this packet or not. , and the collsion was caused
+
+        bool collision = false;
+
+        //collision = IsCollision(wimaxHdr, BASE_POWER);  // removed -replace it later
+
+        if (collision == true)
+        {
+            collision = false;
+            addPowerinfo(wimaxHdr, 0.0,true);
+            drop (pktRx_, "COL");
+            //update drop stat
+            update_watch (&loss_watch_, 1);
+            pktRx_ = NULL;
+            debug2("Drop this packet because of collision.\n");
+            return;
+        }
+
+        addPowerinfo(wimaxHdr, 0.0,true);
+
+        //commenting here to chk without collision  ends
+
+        // chk collision ends
+
+        //   SINR calcualtions
+
+        //removed for testing without Rxinpwr in packet header
+
+        int total_subcarriers=0;
+        //int num_data_subcarrier = getPhy()->getNumDataSubcarrier (UL_);
+        int num_data_subcarrier = getPhy()->getNumSubcarrier (UL_);
+        int num_subchannel      = getPhy()->getNumsubchannels (UL_);
+        int num_symbol_per_slot = getPhy()->getSlotLength (UL_);
+
+        // calculate the total subcarriers needed
+        if (wimaxHdr->phy_info.num_OFDMSymbol != 0)
+        {
+
+            //total_subcarriers = wimaxHdr->phy_info.num_subchannels * wimaxHdr->phy_info.num_OFDMSymbol * num_data_subcarrier ;
+
+            if (wimaxHdr->phy_info.num_OFDMSymbol % num_symbol_per_slot == 0)  // chk this condition , chk whether broacastcid reqd ir not.
+            {
+                if (wimaxHdr->phy_info.num_OFDMSymbol > num_symbol_per_slot)
+                {
+                    // for the first 3 symbols
+                    for (int i = wimaxHdr->phy_info.OFDMSymbol_offset ; i<  (wimaxHdr->phy_info.OFDMSymbol_offset + num_symbol_per_slot) ; i++)
+                        //   for(int j = (wimaxHdr->phy_info.subchannel_offset)*num_data_subcarrier ; j<num_subchannel*num_data_subcarrier ; j++ )
+                    {
+                        total_subcarriers += (num_subchannel*num_data_subcarrier) - ((wimaxHdr->phy_info.subchannel_offset)*num_data_subcarrier ) ;
+                    }
+                    // except the last 3 and first 3 whatever is thr
+                    for (int i = wimaxHdr->phy_info.OFDMSymbol_offset+num_symbol_per_slot ; i< (wimaxHdr->phy_info.OFDMSymbol_offset) + (wimaxHdr->phy_info.num_OFDMSymbol-num_symbol_per_slot) ; i++)
+                        //for(int j = 0 ; j<num_subchannel*num_data_subcarrier ; j++ )
+                    {
+                        total_subcarriers +=  num_subchannel*num_data_subcarrier;
+                    }
+
+                    // last 3
+                    for (int i = wimaxHdr->phy_info.OFDMSymbol_offset +wimaxHdr->phy_info.num_OFDMSymbol-num_symbol_per_slot ; i<  wimaxHdr->phy_info.OFDMSymbol_offset +wimaxHdr->phy_info.num_OFDMSymbol ; i++)
+                        //for(int j = 0 ; j<(wimaxHdr->phy_info.num_subchannels%num_subchannel)*num_data_subcarrier ; j++ )
+                    {
+                        total_subcarriers += ((wimaxHdr->phy_info.num_subchannels - (num_subchannel - (wimaxHdr->phy_info.subchannel_offset)) )%num_subchannel)*num_data_subcarrier;
+                    }
+                }
+                else
+                {
+
+                    for (int i = wimaxHdr->phy_info.OFDMSymbol_offset ; i<  (wimaxHdr->phy_info.OFDMSymbol_offset + num_symbol_per_slot) ; i++)
+                        //for(int j = (wimaxHdr->phy_info.subchannel_offset)*num_data_subcarrier ; j<wimaxHdr->phy_info.num_subchannels*num_data_subcarrier ; j++ )
+                    {
+                        total_subcarriers += wimaxHdr->phy_info.num_subchannels*num_data_subcarrier ;//-  (wimaxHdr->phy_info.subchannel_offset)*num_data_subcarrier ;
+                    }
+                }
+            }
+            else
+            {
+                // for the first num_symbol_per_slot symbols
+                if (wimaxHdr->phy_info.num_OFDMSymbol > 1)
+                {
+                    for (int i = wimaxHdr->phy_info.OFDMSymbol_offset ; i<  (wimaxHdr->phy_info.OFDMSymbol_offset + 1) ; i++)
+                        //   for(int j = (wimaxHdr->phy_info.subchannel_offset)*num_data_subcarrier ; j<num_subchannel*num_data_subcarrier ; j++ )
+                    {
+                        total_subcarriers += num_subchannel*num_data_subcarrier - (wimaxHdr->phy_info.subchannel_offset)*num_data_subcarrier ;
+                    }
+                    // except the last num_symbol_per_slot and first num_symbol_per_slot whatever is thr
+
+                    for (int i = wimaxHdr->phy_info.OFDMSymbol_offset+1 ; i< (wimaxHdr->phy_info.OFDMSymbol_offset) + (wimaxHdr->phy_info.num_OFDMSymbol-1) ; i++)
+                        //for(int j = 0 ; j<num_subchannel*num_data_subcarrier ; j++ )
+                    {
+                        total_subcarriers +=  num_subchannel*num_data_subcarrier ;
+                    }
+
+                    // last num_symbol_per_slot
+                    for (int i = wimaxHdr->phy_info.OFDMSymbol_offset +wimaxHdr->phy_info.num_OFDMSymbol-1 ; i< wimaxHdr->phy_info.OFDMSymbol_offset +wimaxHdr->phy_info.num_OFDMSymbol ; i++)
+                        // for(int j = 0 ; j<(wimaxHdr->phy_info.num_subchannels%num_subchannel)*num_data_subcarrier ; j++ )
+                    {
+                        total_subcarriers += ((wimaxHdr->phy_info.num_subchannels - (num_subchannel - (wimaxHdr->phy_info.subchannel_offset)) )%num_subchannel)*num_data_subcarrier ;
+                    }
+
+                }
+                else
+                {
+
+                    for (int i = wimaxHdr->phy_info.OFDMSymbol_offset ; i<  (wimaxHdr->phy_info.OFDMSymbol_offset + 1) ; i++)
+                        // for(int j = (wimaxHdr->phy_info.subchannel_offset)*num_data_subcarrier ; j<wimaxHdr->phy_info.num_subchannels*num_data_subcarrier ; j++ )
+                    {
+                        total_subcarriers +=    wimaxHdr->phy_info.num_subchannels*num_data_subcarrier;// - (wimaxHdr->phy_info.subchannel_offset)*num_data_subcarrier ;
+                    }
+
+                }
+
+            }
+        }
+        else
+            total_subcarriers = wimaxHdr->phy_info.num_subchannels * num_data_subcarrier ;
+
+        // total subcarrier calculation ends
+
+        debug2(" total_subcarriers = %d \n", total_subcarriers);
+
+        double *signalpower = (double *) new double [total_subcarriers] ;
+        double *interferencepower = (double *) new double [total_subcarriers];
+        double *SINR = (double *) new double [total_subcarriers];
+        for (int i = 0; i< total_subcarriers ; i++)
+        {
+            SINR[i] = 0.0;
+            signalpower[i] = 0.0;
+            interferencepower[i] = 0.0;
+        }
+
+        int n=0,m=0;
+
+        if (wimaxHdr->phy_info.num_OFDMSymbol % num_symbol_per_slot == 0)  // chk this condition
+        {
+            if (wimaxHdr->phy_info.num_OFDMSymbol > num_symbol_per_slot)
+            {
+                // for the first num_symbol_per_slot symbols
+                for (int i = wimaxHdr->phy_info.OFDMSymbol_offset ; i<  (wimaxHdr->phy_info.OFDMSymbol_offset + num_symbol_per_slot) ; i++)
+                    for (int j = (wimaxHdr->phy_info.subchannel_offset)*num_data_subcarrier ; j<num_subchannel*num_data_subcarrier ; j++ )
+                    {
+                        interferencepower[n++]= intpower_[i][j] + BASE_POWER /*+ pktRx_->txinfo_.RxIntPr[i][j]*/;
+                        signalpower[m++]= pktRx_->txinfo_.RxPr_OFDMA[j];
+                    }
+                // except the last num_symbol_per_slot and first num_symbol_per_slot whatever is thr
+                for (int i = wimaxHdr->phy_info.OFDMSymbol_offset+num_symbol_per_slot ; i< (wimaxHdr->phy_info.OFDMSymbol_offset) + (wimaxHdr->phy_info.num_OFDMSymbol-num_symbol_per_slot) ; i++)
+                    for (int j = 0 ; j<num_subchannel*num_data_subcarrier ; j++ )
+                    {
+                        interferencepower[n++]= intpower_[i][j] + BASE_POWER /*+ pktRx_->txinfo_.RxIntPr[i][j]*/;
+                        signalpower[m++]= pktRx_->txinfo_.RxPr_OFDMA[j];
+                    }
+
+                // last num_symbol_per_slot
+                for (int i = wimaxHdr->phy_info.OFDMSymbol_offset +wimaxHdr->phy_info.num_OFDMSymbol-num_symbol_per_slot ; i<  wimaxHdr->phy_info.OFDMSymbol_offset +wimaxHdr->phy_info.num_OFDMSymbol ; i++)
+                    for (int j = 0 ; j<((wimaxHdr->phy_info.num_subchannels - (num_subchannel - (wimaxHdr->phy_info.subchannel_offset)) )%num_subchannel)*num_data_subcarrier; j++ )
+                    {
+                        interferencepower[n++]= intpower_[i][j] + BASE_POWER /*+ pktRx_->txinfo_.RxIntPr[i][j]*/;
+                        signalpower[m++]= pktRx_->txinfo_.RxPr_OFDMA[j];
+                    }
+            }
+            else
+            {
+
+                for (int i = wimaxHdr->phy_info.OFDMSymbol_offset ;
+                        i<  (wimaxHdr->phy_info.OFDMSymbol_offset + num_symbol_per_slot) ; i++)
+
+                    for (int j = (wimaxHdr->phy_info.subchannel_offset)*num_data_subcarrier ;
+                            j<(((wimaxHdr->phy_info.subchannel_offset)*num_data_subcarrier) + wimaxHdr->phy_info.num_subchannels*num_data_subcarrier);
+                            j++ )
+                    {
+                        interferencepower[n++]= intpower_[i][j] + BASE_POWER /*+ pktRx_->txinfo_.RxIntPr[i][j]*/;
+                        signalpower[m++]= pktRx_->txinfo_.RxPr_OFDMA[j];
+                    }
+            }
+        }
+
+        else
+
+        {
+            // for the first num_symbol_per_slot symbols
+            if (wimaxHdr->phy_info.num_OFDMSymbol > 1)
+            {
+                for (int i = wimaxHdr->phy_info.OFDMSymbol_offset ; i<  (wimaxHdr->phy_info.OFDMSymbol_offset + 1) ; i++)
+                    for (int j = (wimaxHdr->phy_info.subchannel_offset)*num_data_subcarrier ; j<num_subchannel*num_data_subcarrier ; j++ )
+                    {
+                        interferencepower[n++]= intpower_[i][j] + BASE_POWER /*+ pktRx_->txinfo_.RxIntPr[i][j]*/;
+                        signalpower[m++]= pktRx_->txinfo_.RxPr_OFDMA[j];
+                    }
+
+                // except the last num_symbol_per_slot and first num_symbol_per_slot whatever is thr
+                for (int i = (wimaxHdr->phy_info.OFDMSymbol_offset+1) ; i<  (wimaxHdr->phy_info.OFDMSymbol_offset) + (wimaxHdr->phy_info.num_OFDMSymbol-1) ; i++)
+                    for (int j = 0 ; j<num_subchannel*num_data_subcarrier ; j++ )
+                    {
+                        interferencepower[n++]= intpower_[i][j] + BASE_POWER /*+ pktRx_->txinfo_.RxIntPr[i][j]*/;
+                        signalpower[m++]= pktRx_->txinfo_.RxPr_OFDMA[j];
+                    }
+
+                // last num_symbol_per_slot
+                for (int i = wimaxHdr->phy_info.OFDMSymbol_offset +wimaxHdr->phy_info.num_OFDMSymbol-1 ; i< wimaxHdr->phy_info.OFDMSymbol_offset +wimaxHdr->phy_info.num_OFDMSymbol ; i++)
+                    for (int j = 0 ; j<((wimaxHdr->phy_info.num_subchannels - (num_subchannel - (wimaxHdr->phy_info.subchannel_offset)) )%num_subchannel)*num_data_subcarrier; j++ )
+                    {
+                        interferencepower[n++]= intpower_[i][j] + BASE_POWER /*+ pktRx_->txinfo_.RxIntPr[i][j]*/;
+                        signalpower[m++]= pktRx_->txinfo_.RxPr_OFDMA[j];
+                    }
+
+            }
+            else
+            {
+                for (int i = wimaxHdr->phy_info.OFDMSymbol_offset ; i<  (wimaxHdr->phy_info.OFDMSymbol_offset + 1) ; i++)
+                    for (int j = (wimaxHdr->phy_info.subchannel_offset)*num_data_subcarrier ; j<(((wimaxHdr->phy_info.subchannel_offset)*num_data_subcarrier) + wimaxHdr->phy_info.num_subchannels*num_data_subcarrier) ; j++ )
+                    {
+                        interferencepower[n++]= intpower_[i][j] + BASE_POWER /*+ pktRx_->txinfo_.RxIntPr[i][j]*/;
+                        signalpower[m++]= pktRx_->txinfo_.RxPr_OFDMA[j];
+                    }
+            }
+        }
+
+        int counter = 0;
+        for (int k = 0; k < total_subcarriers; k++)
+        {
+            if ( signalpower[k] > DOUBLE_INT_ZERO) // not equals to zero
+            {
+                SINR[counter] =  signalpower[k]/interferencepower[counter];
+                counter++;
+            }
+        }
+        debug2("in MAC BS, [%d] subcarriers signal power are calculated.\n ", counter);
+
+
+        double SIR = 0.0;
+        //debug2("In MAC BS: the total number of subcarrier/3 is [%d]\n", total_subcarriers/3);
+
+
+        //process packet
+        gen_mac_header_t header = wimaxHdr->header;
+        OFDMAPhy *phy = getPhy();
+
+        //debug2(" checking for intereference power \n" );
+
+        // BLER calculation
+
+        GlobalParams_Wimax* global ;
+
+        global =  GlobalParams_Wimax::Instance();
+
+        int num_of_slots,num_of_complete_block,max_block_size,last_block_size , index, num_subcarrier_block ;
+
+        double BLER= 0.0, beta=0.0, eesm_sum = 0.0, rand1 =0.0;
+
+        num_of_slots = (int) ceil((double)ch->size() / (double)phy->getSlotCapacity(wimaxHdr->phy_info.modulation_, UL_));
+
+        max_block_size=phy->getMaxBlockSize(wimaxHdr->phy_info.modulation_);   // get max  block size in number of slots
+
+        last_block_size = num_of_slots % max_block_size;
+
+        num_of_complete_block = (int) floor(num_of_slots / max_block_size);
+
+        int ITU_PDP = getITU_PDP ();
+
+        bool pkt_error = FALSE;
+
+        debug2(" num of complete blocks = %d , ITU_PDP = %d, num of slots = %d, max block size = %d, last block size = %d \n" , num_of_complete_block, ITU_PDP, num_of_slots, max_block_size, last_block_size );
+
+        //max_block_size = 2;     // testing for results. remove it.
+        //last_block_size = 2;
+
+        if (num_of_complete_block == 0) {
+            //num_of_complete_block =1;
+            index =  phy->getMCSIndex( wimaxHdr->phy_info.modulation_ ,  last_block_size);
+
+            beta = global->Beta[ITU_PDP][index];
+            debug2(" beta = %.2f = \n index = %d\n" , beta,index );
+
+            num_subcarrier_block = num_symbol_per_slot * getPhy()->getNumSubcarrier (UL_) * last_block_size;
+
+            /* if(num_subcarrier_block > total_subcarriers) num_subcarrier_block = total_subcarriers;
+            for( int i = 0; i< num_subcarrier_block ; i++)
+            {
+            debug2( " SINR (%d) = %g , eesm_sum = %g %g\n", i, SINR[i], eesm_sum, exp(-(SINR[i]/beta)));
+            eesm_sum = eesm_sum + exp( -(SINR[i]/beta));
+            }*/
+
+            //printf("\n n [%d] --- counter [%d]\n",n, counter);
+            for (int i=0; i<counter; i++)
+            {
+                eesm_sum = eesm_sum + exp( -(SINR[i]/beta));
+            }
+
+
+            if (num_subcarrier_block == 0) {
+                fprintf(stderr, "ERROR: num_subcarrier_block = 0\n");
+                exit (1);
+            }
+            if (eesm_sum >= BASE_POWER) {
+                SIR =  (-beta) * log(eesm_sum/counter);
+                SIR=10*log10(SIR);
+                BLER = global->TableLookup(index, SIR);
+            } else {
+                //eesm = 0 when SINR is large (MS close to BS) and exp returns 0
+                BLER = 0;
+            }
+            debug2(" BLER-BS one block = %.6f = \n" , BLER );
+
+            int rand_num = ((rand() % 100) +1 ) ;
+            // debug2(" random num = %d = \n" , rand_num );
+            rand1 = rand_num/100.00;
+
+            //if (!phymib_.disableInterference && BLER > rand1)
+            if (!phymib_.disableInterference && BLER > 0.96)
+                pkt_error = TRUE;
+
+            // getBLER(wimaxHdr->phy_info.modulation_, SINR, last_block_size);
+        }
+        else {
+
+            // First the complete blocks are checked fro error
+
+            index =  phy->getMCSIndex( wimaxHdr->phy_info.modulation_ ,  max_block_size);
+
+            beta = global->Beta[ITU_PDP][index];
+
+            debug2(" beta = %.2f index = %d \n" , beta,index );
+
+            num_subcarrier_block = num_symbol_per_slot * getPhy()->getNumSubcarrier (UL_) * max_block_size;
+
+
+            if (num_subcarrier_block > total_subcarriers) num_subcarrier_block = total_subcarriers;
+
+            /* for( int i = 0; i< num_subcarrier_block ; i++)
+            eesm_sum = eesm_sum + exp( -(SINR[i]/beta));*/
+
+            for (int i=0; i<counter; i++)
+            {
+                eesm_sum = eesm_sum + exp( -(SINR[i]/beta));
+            }
+
+
+            if (num_subcarrier_block == 0) {
+                fprintf(stderr, "ERROR: num_subcarrier_block = 0\n");
+                exit (1);
+            }
+            if (eesm_sum >=BASE_POWER) {
+                //SIR =  (-beta) * log( eesm_sum/(num_subcarrier_block) );
+                SIR =  (-beta) * log(eesm_sum/counter);
+                SIR=10*log10(SIR);
+                debug2(" SIR-BS = %.6f = \n" , SIR );
+                BLER = global->TableLookup(index, SIR);
+            } else {
+                //eesm = 0 when SINR is large (MS close to BS) and exp returns 0
+                BLER = 0;
+            }
+            debug2(" BLER-BS complete blocks = %.6f = \n" , BLER );
+
+            int rand_num = ((rand() % 100) +1 ) ;
+
+            //debug2(" random num = %d = \n" , rand_num );
+
+            rand1 = rand_num/100.00;
+
+            //if (!phymib_.disableInterference && BLER > rand1)
+            if (!phymib_.disableInterference && BLER > 0.96)
+                pkt_error = TRUE;
+
+            // Chk if thr is any last block, compute whether it is in error or not.
+            if (last_block_size > 0)
+            {
+                eesm_sum=0;
+                index =  phy->getMCSIndex( wimaxHdr->phy_info.modulation_ ,  last_block_size);
+
+                beta = global->Beta[ITU_PDP][index];
+
+                num_subcarrier_block = num_symbol_per_slot * getPhy()->getNumSubcarrier (UL_) * last_block_size;
+
+                if (num_subcarrier_block > total_subcarriers) num_subcarrier_block = total_subcarriers;
+
+
+                /*	  for( int i = 0; i< num_subcarrier_block ; i++)
+                  eesm_sum = eesm_sum + exp( -(SINR[i]/beta));*/
+
+                for (int i=0; i<counter; i++)
+                {
+                    eesm_sum = eesm_sum + exp( -(SINR[i]/beta));
+                }
+
+
+                if (num_subcarrier_block == 0) {
+                    fprintf(stderr, "ERROR: num_subcarrier_block = 0\n");
+                    exit (1);
+                }
+                if (eesm_sum >=BASE_POWER) {
+                    //SIR =  (-beta) * log( eesm_sum/(num_subcarrier_block) );
+                    SIR =  (-beta) * log(eesm_sum/counter);
+                    SIR=10*log10(SIR);
+                    debug2(" SIR-BS = %.6f = \n" , SIR );
+                    BLER = global->TableLookup(index, SIR);
+                } else {
+                    //eesm = 0 when SINR is large (MS close to BS) and exp returns 0
+                    BLER = 0;
+                }
+
+#if 0
+                int rand_num = ((rand() % 100) +1 ) ;
+
+                //debug2(" random num = %d = \n" , rand_num );
+
+                rand1 = rand_num/100.00;
+
+                if (!phymib_.disableInterference && BLER > rand1)
+                    pkt_error = TRUE;
+#endif
+                if (!phymib_.disableInterference && BLER > 0.96)
+                    pkt_error = TRUE;
+            }
+
+
+        }
+
+        //debug2( " BLER = %.25f" , BLER);
+
+        // deleting dynamic allocations  //removed for testing without Rxinpwr in packet header
+
+        delete [] SINR;
+        delete [] signalpower;
+        delete [] interferencepower;
+
+
+        if ( pkt_error == TRUE)
+
+        {
+            addPowerinfo(wimaxHdr, 0.0,true);
+
+            debug2("error in the packet, drop this packet. the Mac does not process\n");
+            Packet::free(pktRx_);
+            pkt_error = FALSE;
+            //update drop stat
+            update_watch (&loss_watch_, 1);
+            pktRx_ = NULL;
+            return;
+
+        }
+
+
+
+        //removed for testing without Rxinpwr in packet header
+
+        //BLER calcualtion ends
+
+
+
+    } //bwreq packet treatment else ends here.  replace { when testing ends
+
+
+    addPowerinfo(wimaxHdr, 0.0,true);
+    // normal packet processing starts.
+
+    debug2 ("normal packet processing\n");
+
+    gen_mac_header_t header = wimaxHdr->header;
+    int cid = header.cid;
+    Connection *con = connectionManager_->get_connection (cid, IN_CONNECTION);
+    if (con==NULL)
+        return;
+
+    //update rx time of last packet received
+    PeerNode *peer;
+    if (type_ == STA_MN)
+        peer = getPeerNode_head(); //MN only has one peer
+    else
+        peer = con->getPeerNode(); //BS can have multiple peers
+
+    if (peer) {
+        peer->setRxTime (NOW);
+
+        //collect receive signal strength stats
+        if (pktRx_->txinfo_.RxPr*1e3 == 0) {
+            fprintf(stderr, "ERROR: pktRx_->txinfo_.RxPr*1e3 = 0\n");
+        }
+        peer->getStatWatch()->update(10*log10(pktRx_->txinfo_.RxPr*1e3));
+        //debug ("At %f in Mac %d weighted RXThresh: %e rxp average %e\n", NOW, index_, macmib_.lgd_factor_*macmib_.RXThreshold_, pow(10,peer->getStatWatch()->average()/10)/1e3);
+        double avg_w = pow(10,(peer->getStatWatch()->average()/10))/1e3;
+
+        if ( avg_w < (macmib_.lgd_factor_*macmib_.RXThreshold_)) {
+#ifdef USE_802_21
+            double probability = ((macmib_.lgd_factor_*macmib_.RXThreshold_)-avg_w)/((macmib_.lgd_factor_*macmib_.RXThreshold_)-macmib_.RXThreshold_);
+            Mac::send_link_going_down (peer->getAddr(), addr(), -1, (int)(100*probability), LGD_RC_LINK_PARAM_DEGRADING, eventId_++);
+#endif
+            if (peer->getPrimary(IN_CONNECTION)!=NULL) { //check if node registered
+                peer->setGoingDown (true);
+            }
+        }
+        else {
+            if (peer->isGoingDown()) {
+#ifdef USE_802_21
+                Mac::send_link_rollback (addr(), getPeerNode_head()->getAddr(), eventId_-1);
+#endif
+                peer->setGoingDown (false);
+            }
+        }
+    }
+
+    //this flag is used to update fragmentaion for piggybacking scenario
+    int flag_pig = 0;
+
+    //Process GM subheader (piggybacking)
+    int bw_update_dueto_gm = 0;
+    int more_bw = 0;
+    int old_bw = 0;
+    if (wimaxHdr->header.type_fbgm) {
+        more_bw = wimaxHdr->grant_subheader.piggyback_req;
+        old_bw = con->getBw();
+        flag_pig = 2;
+        debug10 ("BS: Piggybacking, At %f Connection %d, flag :%d, old_bw :%d, add_bw :%d\n", NOW, con->get_cid(), wimaxHdr->header.type_fbgm, con->getBw(), more_bw);
+        if (more_bw > old_bw) {
+            bw_update_dueto_gm = more_bw;
+            con->setBw(bw_update_dueto_gm);
+        }
+
+        debug10 ("    Final bw_update con->getBw :%d\n",con->getBw());
+
+    } else {
+        bw_update_dueto_gm = 0;
+    }
+    //End piggybacking process
+
+    //Begin RPI
+    // New function for reassembly will be implemented for ARQ, Fragmentation and Packing
+    if (con->getArqStatus () != NULL && con->getArqStatus ()->isArqEnabled() == 1
+            && con->isFragEnable () == true && con->isPackingEnable () == true
+            && HDR_CMN(pktRx_)->ptype()!=PT_MAC) {
+        process_mac_pdu_witharqfragpack(con, pktRx_);
+        update_throughput (&rx_data_watch_, 8*ch->size());
+        update_throughput (&rx_traffic_watch_, 8*ch->size());
+        return;
+    }
+    //End RPI
+
+    //process reassembly
+    debug2 ("Reading fragmentation flags: %d (%d) for CID %d\n", wimaxHdr->header.type_frag, wimaxHdr->header.type_frag & 0x1, cid);
+
+    if (wimaxHdr->header.type_frag) {
+        bool drop_pkt = true;
+        bool frag_error = false;
+        debug2 ("\tfrag type = %d (type noflag :%d, first :%d, cont :%d, last :%d)\n", wimaxHdr->frag_subheader.fc & 0x3, FRAG_NOFRAG, FRAG_FIRST,FRAG_CONT, FRAG_LAST);
+        switch (wimaxHdr->frag_subheader.fc & 0x3) {
+        case FRAG_NOFRAG:
+            if (con->getFragmentationStatus()!=FRAG_NOFRAG)
+                con->updateFragmentation (FRAG_NOFRAG, 0, 0); //reset
+            drop_pkt = false;
+            break;
+        case FRAG_FIRST:
+            //when it is the first fragment, it does not matter if we previously
+            //received other fragments, since we reset the information
+            assert (wimaxHdr->frag_subheader.fsn == 0);
+            debug2 ("\tReceived first fragment fsn :%d cid :%d", wimaxHdr->frag_subheader.fsn&0x7, cid);
+            if (con->getFragmentationStatus()!=FRAG_NOFRAG) {
+                debug2 ("...Error: expecting CONT or LAST\n");
+            } else {
+                debug2 ("...Ok\n");
+            }
+
+            if (wimaxHdr->header.type_fbgm) {
+                con->updateFragmentation (FRAG_FIRST, 0, ch->size()-(HDR_MAC802_16_SIZE+HDR_MAC802_16_FRAGSUB_SIZE+flag_pig));
+            } else {
+                con->updateFragmentation (FRAG_FIRST, 0, ch->size()-(HDR_MAC802_16_SIZE+HDR_MAC802_16_FRAGSUB_SIZE));
+            }
+
+            break;
+        case FRAG_CONT:
+            debug2 ("\tReceived cont fragment fsn :%d cid :%d", wimaxHdr->frag_subheader.fsn&0x7, cid);
+            if ( (con->getFragmentationStatus()!=FRAG_FIRST
+                    && con->getFragmentationStatus()!=FRAG_CONT)
+                    || ((wimaxHdr->frag_subheader.fsn&0x7) != (con->getFragmentNumber ()+1)%8) ) {
+                frag_error = true;
+                debug2 ("...Error: status :%d, fsn :%d, expected fsn :%d\n",
+                        con->getFragmentationStatus(), wimaxHdr->frag_subheader.fsn&0x7, (con->getFragmentNumber ()+1)%8);
+                con->updateFragmentation (FRAG_NOFRAG, 0, 0); //reset
+            } else {
+                debug2 ("...Ok\n");
+                if (wimaxHdr->header.type_fbgm) {
+                    con->updateFragmentation (FRAG_CONT, wimaxHdr->frag_subheader.fsn&0x7, con->getFragmentBytes()+ch->size()-(HDR_MAC802_16_SIZE+HDR_MAC802_16_FRAGSUB_SIZE+flag_pig));
+                } else {
+                    con->updateFragmentation (FRAG_CONT, wimaxHdr->frag_subheader.fsn&0x7, con->getFragmentBytes()+ch->size()-(HDR_MAC802_16_SIZE+HDR_MAC802_16_FRAGSUB_SIZE));
+                }
+            }
+            break;
+        case FRAG_LAST:
+            debug2 ("\tReceived last fragment fsn :%d cid :%d", wimaxHdr->frag_subheader.fsn&0x7, cid);
+            if ( (con->getFragmentationStatus()==FRAG_FIRST || con->getFragmentationStatus()==FRAG_CONT)
+                    && ((wimaxHdr->frag_subheader.fsn&0x7) == (con->getFragmentNumber ()+1)%8) ) {
+                ch->size() += con->getFragmentBytes()-HDR_MAC802_16_FRAGSUB_SIZE;
+                drop_pkt = false;
+                debug2 ("...Ok\n");
+            } else {
+                debug2 ("...Error: status :%d (nofrag :%d, first :%d, cont :%d, last :%d), fsn :%d, expected fsn :%d\n",
+                        con->getFragmentationStatus(), FRAG_NOFRAG, FRAG_FIRST, FRAG_CONT, FRAG_LAST ,wimaxHdr->frag_subheader.fsn&0x7, (con->getFragmentNumber ()+1)%8);
+                frag_error = true;
+            }
+            con->updateFragmentation (FRAG_NOFRAG, 0, 0); //reset
+            break;
+        default:
+            fprintf (stderr,"Error, unknown fragmentation type\n");
+            exit (-1);
+        }
+        //if we got an error, or it is a fragment that is not the last, free the packet
+        if (drop_pkt) {
+            if (frag_error) {
+                //update drop stat
+                update_watch (&loss_watch_, 1);
+                debug10 ("Drop packets FRG error\n");
+                drop (pktRx_, "FRG"); //fragmentation error
+            } else {
+                //silently discard this fragment.
+                Packet::free(pktRx_);
+            }
+            pktRx_=NULL;
+            return;
+        }
+    }
+
+    //Check if this is a bandwidth request
+    hdr_mac802_16 *wimaxHdr_tmp = HDR_MAC802_16(pktRx_);
+    gen_mac_header_t header_tmp = wimaxHdr_tmp->header;
+
+    bw_req_header_t *req_tmp;
+    req_tmp = (bw_req_header_t *)&header_tmp;
+
+    if (header.ht == 0) {
+        if ( (req_tmp->type == 0x3) || (req_tmp->type == 0x2) ) {
+            debug10 ("Impossible; PANIC\n");
+
+#ifndef BWREQ_PATCH
+        } else {
+            if (con->getBw() > 0) {
+                debug10 ("setBW left-over At %f Connection %d, old=%d, rcv=%d, left=%d\n", NOW, con->get_cid(), con->getBw(), ch->size(), con->getBw()-ch->size());
+                if (con->getBw()-ch->size() >0) {
+                    con->setBw(con->getBw()-ch->size());
+                } else {
+                    con->setBw(0);
+                }
+            }
+#endif
+        }
+    }
+    //end checking bw-req packet
+
+    /* => Old
+    //check if this is a bandwidth request
+    if (header.ht == 0 && con->getBw() >0) {
+    debug2 ("At %f Connection %d, old=%d, rcv=%d, left=%d\n", NOW, con->get_cid(), con->getBw(), ch->size(), con->getBw()-ch->size());
+    con->setBw(con->getBw()-ch->size());
+    }
+    */
+
+    //We check if it is a MAC packet or not
+    if (HDR_CMN(pktRx_)->ptype()==PT_MAC) {
+        process_mac_packet (con, pktRx_);
+        update_throughput (&rx_traffic_watch_, 8*ch->size());
+        mac_log(pktRx_);
+        Packet::free(pktRx_);
+    }
+    else {
+        update_throughput (&rx_data_watch_, 8*ch->size());
+        update_throughput (&rx_traffic_watch_, 8*ch->size());
+        ch->size() -= HDR_MAC802_16_SIZE;
+        uptarget_->recv(pktRx_, (Handler*) 0);
+    }
+
+    update_watch (&loss_watch_, 0);
+    pktRx_=NULL;
+}

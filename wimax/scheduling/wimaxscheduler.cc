@@ -104,7 +104,8 @@ int WimaxScheduler::transfer_packets (Connection *c, Burst *b, int b_data, int s
   p = c->get_queue()->head();
 
   int max_data;
-  if (mac_->getNodeType()==STA_BS) 
+  //TODO:reconsider the RS situation
+  if (mac_->getNodeType()==STA_BS||mac_->getNodeType()==STA_RS)
     { 
       max_data = phy->getMaxPktSize (b->getDuration(), mac_->getMap()->getDlSubframe()->getProfile (b->getIUC())->getEncoding())-b_data;
 
@@ -127,8 +128,8 @@ int WimaxScheduler::transfer_packets (Connection *c, Burst *b, int b_data, int s
   while (p) {
     ch = HDR_CMN(p);
     wimaxHdr = HDR_MAC802_16(p);
-
-    if (mac_->getNodeType()==STA_BS) max_data = phy->getMaxPktSize (b->getDuration(), mac_->getMap()->getDlSubframe()->getProfile (b->getIUC())->getEncoding())-b_data;
+//TODO:reconsider the RS situation
+    if (mac_->getNodeType()==STA_BS||mac_->getNodeType()==STA_RS)max_data = phy->getMaxPktSize (b->getDuration(), mac_->getMap()->getDlSubframe()->getProfile (b->getIUC())->getEncoding())-b_data;
     else max_data = phy->getMaxPktSize (b->getDuration(), mac_->getMap()->getUlSubframe()->getProfile (b->getIUC())->getEncoding())-b_data;
 
     debug2 ("\tIn Loop MacADDR :%d, MaxDATA :%d (burst duration :%d, b_data :%d)\n", mac_->addr(), max_data, b->getDuration(), b_data);
@@ -191,8 +192,8 @@ int WimaxScheduler::transfer_packets (Connection *c, Burst *b, int b_data, int s
 	}
       }
 
-
-    if (mac_->getNodeType()==STA_BS) 
+//TODO:reconsider the RS situation
+    if (mac_->getNodeType()==STA_BS||mac_->getNodeType()==STA_RS)
       {
 	txtime = phy->getTrxTime (ch->size(), mac_->getMap()->getDlSubframe()->getProfile (b->getIUC())->getEncoding());
 	txtime2 = phy->getTrxSymbolTime (b_data+ch->size(), mac_->getMap()->getDlSubframe()->getProfile (b->getIUC())->getEncoding());
@@ -292,8 +293,8 @@ int WimaxScheduler::transfer_packets1 (Connection *c, Burst *b, int b_data)
 
   subchannel_offset = initial_subchannel_offset;
   old_subchannel_offset = subchannel_offset;
-
-  if (mac_->getNodeType()==STA_BS) {
+//TODO:reconsider the RS situation
+  if (mac_->getNodeType()==STA_BS||mac_->getNodeType()==STA_RS){
     num_symbol_per_slot = phy->getSlotLength (DL_); 
   } else {
     num_symbol_per_slot = phy->getSlotLength (UL_); 
@@ -427,8 +428,8 @@ int WimaxScheduler::transfer_packets1 (Connection *c, Burst *b, int b_data)
   p = c->get_queue()->head();
 
   int max_data;
-
-  if (mac_->getNodeType()==STA_BS) {
+//TODO:reconsider the RS situation
+  if (mac_->getNodeType()==STA_BS||mac_->getNodeType()==STA_RS){
     max_data = phy->getMaxPktSize (b->getnumSubchannels(), mac_->getMap()->getDlSubframe()->getProfile (b->getIUC())->getEncoding(), DL_) - b_data;    
 
     debug10 ("\tBS_transfer1.1, CID :%d with bdata :%d, but MaxData (MaxSize-bdata) :%d, MaxSize :%d, q->bytes :%d\n", c->get_cid(), b_data, max_data, phy->getMaxPktSize (b->getnumSubchannels(), mac_->getMap()->getDlSubframe()->getProfile (b->getIUC())->getEncoding(), DL_), c->queueByteLength() );
@@ -784,8 +785,8 @@ int WimaxScheduler::transfer_packets1 (Connection *c, Burst *b, int b_data)
     ch = HDR_CMN(p);
     wimaxHdr = HDR_MAC802_16(p);
     if(ch->size() < 0 ) debug2(" packet size negative --- panic!!! "); 		
-
-    if (mac_->getNodeType()==STA_BS)
+//TODO:reconsider the RS situation
+    if (mac_->getNodeType()==STA_BS||mac_->getNodeType()==STA_RS)
       max_data = phy->getMaxPktSize (b->getnumSubchannels(), mac_->getMap()->getDlSubframe()->getProfile (b->getIUC())->getEncoding(), DL_) - b_data;
     else {
       max_data = phy->getMaxPktSize (b->getnumSubchannels(), mac_->getMap()->getUlSubframe()->getProfile (b->getIUC())->getEncoding(), UL_) - b_data - gm_flag;
@@ -942,8 +943,8 @@ int WimaxScheduler::transfer_packets1 (Connection *c, Burst *b, int b_data)
     //Trying to calculate how to fill up things here? Before this, frag and arq business?
 
 /*Richard fixed*/
-
-    if (mac_->getNodeType()==STA_BS) 
+//TODO:reconsider the RS situation
+    if (mac_->getNodeType()==STA_BS || mac_->getNodeType()==STA_RS) 
       {
 	assigned_subchannels = phy->getNumSubchannels(b_data, mac_->getMap()->getDlSubframe()->getProfile (b->getIUC())->getEncoding(), DL_);
 	numsubchannels = phy->getNumSubchannels(ch->size(), mac_->getMap()->getDlSubframe()->getProfile (b->getIUC())->getEncoding(), DL_);
@@ -1002,7 +1003,8 @@ int WimaxScheduler::transfer_packets1 (Connection *c, Burst *b, int b_data)
 	    wimaxHdr->phy_info.subchannel_offset,wimaxHdr->phy_info.num_subchannels);
 
     //wimaxHdr->phy_info.channel_index = c->getPeerNode()->getchannel();
-    if (mac_->getNodeType()==STA_BS)
+//TODO:reconsider the RS situation
+    if (mac_->getNodeType()==STA_BS || mac_->getNodeType()==STA_RS)
       {
 	wimaxHdr->phy_info.direction = 0;
 	if(c->getPeerNode())
@@ -1027,8 +1029,8 @@ int WimaxScheduler::transfer_packets1 (Connection *c, Burst *b, int b_data)
 
     b->enqueue(p);      //enqueue into burst
     Ofdm_mod_rate dlul_map_mod;
-
-    if (mac_->getNodeType()==STA_BS) {
+//TODO:reconsider the RS situation
+    if (mac_->getNodeType()==STA_BS || mac_->getNodeType()==STA_RS) {
       dlul_map_mod = mac_->getMap()->getDlSubframe()->getProfile (b->getIUC())->getEncoding();
     } else {
       dlul_map_mod = mac_->getMap()->getUlSubframe()->getProfile (b->getIUC())->getEncoding();
@@ -1037,8 +1039,8 @@ int WimaxScheduler::transfer_packets1 (Connection *c, Burst *b, int b_data)
 
 //    b_data += ch->size(); //increment amount of data enqueued
     debug2 ("In station %d packet enqueued b_data = %d \n", mac_->getNodeType(), b_data);
-
-    if (!pkt_transfered && mac_->getNodeType()!=STA_BS)
+//TODO: reconsider the RS situation
+    if (!pkt_transfered && mac_->getNodeType()!=STA_BS && mac_->getNodeType()!=STA_RS)
       { //if we transfert at least one packet, remove bw request
 	pkt_transfered = true;
 	mac_->getMap()->getUlSubframe()->getBw_req()->removeRequest (c->get_cid());
@@ -1075,7 +1077,8 @@ int WimaxScheduler::transfer_packets_with_fragpackarq(Connection *c, Burst *b, i
   int flag_bw_req = 0;
 
   int num_symbol_per_slot;
-  if (mac_->getNodeType()==STA_BS) 
+  //TODO:reconsider the RS situation
+  if (mac_->getNodeType()==STA_BS || mac_->getNodeType()==STA_RS) 
   {
     num_symbol_per_slot = phy->getSlotLength (DL_); 
   } 
@@ -1116,7 +1119,8 @@ int WimaxScheduler::transfer_packets_with_fragpackarq(Connection *c, Burst *b, i
 	int arq_block_size = ch_pdu->size ();
 
 	/*get the maximum size of the data which could be transmitted using this data burst without changing anything.*/
-	if (mac_->getNodeType()==STA_BS)
+	//TODO:reconsider the RS situation
+	if (mac_->getNodeType()==STA_BS ||mac_->getNodeType()==STA_RS)
 	{
 		max_data = phy->getMaxPktSize (b->getnumSubchannels(), mac_->getMap()->getDlSubframe()->getProfile (b->getIUC())->getEncoding(), DL_) - b_data;    
 		debug2 ("ARQ: In Mac %d max data=%d (b_data=%d) ch_pdu size=%d\n", mac_->addr(), max_data, b_data,ch_pdu->size ());
@@ -1336,8 +1340,8 @@ int WimaxScheduler::transfer_packets_with_fragpackarq(Connection *c, Burst *b, i
 	{
 		ch = HDR_CMN(p);
 		wimaxHdr = HDR_MAC802_16(p);
-
-		if (mac_->getNodeType()==STA_BS)
+//TODO:reconsider the RS situation
+		if (mac_->getNodeType()==STA_BS||mac_->getNodeType()==STA_RS)
 			max_data = phy->getMaxPktSize (b->getnumSubchannels(), mac_->getMap()->getDlSubframe()->getProfile (b->getIUC())->getEncoding(), DL_) - b_data;    
 		else
 			max_data = phy->getMaxPktSize (b->getnumSubchannels(), mac_->getMap()->getUlSubframe()->getProfile (b->getIUC())->getEncoding(), UL_) - b_data;  
@@ -1433,7 +1437,8 @@ int WimaxScheduler::transfer_packets_with_fragpackarq(Connection *c, Burst *b, i
   int assigned_subchannels;
   int symbol_offset;
   //Trying to calculate how to fill up things here? Before this, frag and arq business?
-  if (mac_->getNodeType()==STA_BS) {
+  //reconsider the RS situation
+  if (mac_->getNodeType()==STA_BS||mac_->getNodeType()==STA_RS) {
     assigned_subchannels = phy->getNumSubchannels(b_data, mac_->getMap()->getDlSubframe()->getProfile (b->getIUC())->getEncoding(), DL_);
     numsubchannels = phy->getNumSubchannels(ch_pdu->size(), mac_->getMap()->getDlSubframe()->getProfile (b->getIUC())->getEncoding(), DL_);
     //RPI not working
@@ -1486,7 +1491,8 @@ int WimaxScheduler::transfer_packets_with_fragpackarq(Connection *c, Burst *b, i
   wimaxHdr_pdu->phy_info.subchannel_offset = initial_subchannel_offset;//subchannel_offset;
   wimaxHdr_pdu->phy_info.num_OFDMSymbol = txtime_s;
   wimaxHdr_pdu->phy_info.OFDMSymbol_offset = symbol_offset; //initial_offset;
-  if (mac_->getNodeType()==STA_BS)
+  //reconsider the RS situation
+  if (mac_->getNodeType()==STA_BS||mac_->getNodeType()==STA_RS)
     {
       wimaxHdr_pdu->phy_info.direction = 0;
       wimaxHdr_pdu->phy_info.channel_index = c->getPeerNode()->getchannel();

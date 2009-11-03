@@ -462,7 +462,7 @@ int ServiceFlowHandler::addStaticFlow (int argc, const char*const* argv)
 
     /* Add the Service Flow to the Static Flow List*/
     staticflow->insert_entry_head (&static_flow_head_);
-    debug2(" service flow static flow created ");
+    debug2(" service flow static flow created \n");
     return TCL_OK;
 }
 

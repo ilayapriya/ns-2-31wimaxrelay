@@ -167,7 +167,7 @@ void RSScheduler::init ()
 {
     WimaxScheduler::init();
 //TODO remove this if statement
-    if (false) {
+    if (true) {
         // If the user did not set the profiles by hand, let's do it
         // automatically
         if (getMac()->getMap()->getDlSubframe()->getProfile (DIUC_PROFILE_1)==NULL)
@@ -1216,7 +1216,7 @@ void RSScheduler::ssschedule()
 void RSScheduler::schedule ()
 {
 
-    ssschedule();
+    //ssschedule();
 
     //The scheduler will perform the following steps:
     //1-Clear UL map
@@ -1231,7 +1231,7 @@ void RSScheduler::schedule ()
     //7-Assign burst -> physical allocation
     //Note that, we do not simulate FCH in this version. We will do that in next version.
 //TODO remove this if statement
-    if (false) {
+    if (true) {
         Packet *p;
         struct hdr_cmn *ch;
         double txtime; //tx time for some data (in second)

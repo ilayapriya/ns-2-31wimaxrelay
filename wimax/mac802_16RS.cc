@@ -77,6 +77,7 @@ Mac802_16RS::Mac802_16RS ():Mac802_16 (), cl_head_ (0), cl_tail_ (0),
     map_ = new FrameMap (this);
 
     //create timers for state machine
+
     t1timer_ = new WimaxT1Timer (this);
     t2timer_ = new WimaxT2Timer (this);
     t6timer_ = NULL;
@@ -195,7 +196,7 @@ Mac802_16RS::init ()
 
     //RS is looking for synchronization
     state_ = MAC802_16_WAIT_DL_SYNCH;
-
+ 
     //start timer for expiration
     t21timer_->start (macmib_.t21_timeout);
     int nbPS = (int) floor ((getFrameDuration () / getPhy ()->getPS ()));
@@ -221,7 +222,7 @@ Mac802_16RS::init ()
     }
     //schedule the first frame by using a random backoff to avoid
     //synchronization between RSs.
-
+  
     /*
     *BS RELATED
     */
@@ -3678,7 +3679,7 @@ Mac802_16RS::update_throughput (ThroughputWatch * watch, double size)
 void
 Mac802_16RS::start_dlsubframe ()
 {
-    if (true)
+    if (false)
     {
         //TODO : This function must be written carefully. There should be 2 ul and dl timer for bs and ss roles
         debug2 ("At %f in Mac %d RS scheduler dlsubframe expires %d\n", NOW,
@@ -3729,7 +3730,7 @@ Mac802_16RS::start_dlsubframe ()
         //reschedule for next frame
         dl_timer_->resched (getFrameDuration ());
         ul=0;
-    } else if (connected) {
+    } else if (/*connected*/true) {
 
         //************************
         //
@@ -3793,19 +3794,6 @@ Mac802_16RS::start_ulsubframe ()
 
         debug ("At %f in Mac %d RS scheduler ulsubframe expires\n", NOW, addr ());
 
-        //change PHY state
-        getPhy ()->setMode (OFDM_RECV);
-
-        //start handler of ulsubframe
-        getMap ()->getUlSubframe ()->getTimer ()->sched (0);
-
-        //reschedule for next frame
-        ul_timer_->resched (getFrameDuration ());
-        ul=0;
-    } else
-    {
-        debug ("At %f in Mac %d RS scheduler ulsubframe expires\n", NOW, addr ());
-
         //change state of PHY: even though it should have been done before
         //there are some cases where it does not (during scanning)
         getPhy ()->setMode (OFDM_SEND);
@@ -3824,6 +3812,21 @@ Mac802_16RS::start_ulsubframe ()
         //reschedule for next frame
         ul_timer_->resched (getFrameDuration ());
         ul=1;
+
+    } else
+    {
+              debug ("At %f in Mac %d RS scheduler ulsubframe expires\n", NOW, addr ());
+
+        //change PHY state
+        getPhy ()->setMode (OFDM_RECV);
+
+        //start handler of ulsubframe
+        getMap ()->getUlSubframe ()->getTimer ()->sched (0);
+
+        //reschedule for next frame
+        ul_timer_->resched (getFrameDuration ());
+        ul=0;
+	
     }
 }
 
