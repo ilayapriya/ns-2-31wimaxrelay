@@ -3,7 +3,7 @@
 # @date 10/25/2005
 # @modified 07/07/08 
 # Test file for wimax
-# Scenario: Communication between MN and Sink Node with MN attached to BS.
+# Scenario: Communication between MN and Sink Node with MN attached to RS.
 #           Using grep ^r out.res | grep MAC | grep -c cbr you can see the number of
 #           mac packets received at the destination (100 packets). 
 #           Using grep ^s out.res | grep MAC | grep -c cbr you can see the number of 
@@ -65,7 +65,7 @@ Phy/WirelessPhy set OFDMA_ 1
 set opt(chan)           Channel/WirelessChannel    ;# channel type
 set opt(prop)           Propagation/OFDMA          ;# radio-propagation model
 set opt(netif)          Phy/WirelessPhy/OFDMA      ;# network interface type
-set opt(mac)            Mac/802_16/BS              ;# MAC type
+set opt(mac)            Mac/802_16/RS              ;# MAC type
 set opt(ifq)            Queue/DropTail/PriQueue    ;# interface queue type
 set opt(ll)             LL                         ;# link layer type
 set opt(ant)            Antenna/OmniAntenna        ;# antenna model
@@ -122,7 +122,7 @@ $sinkNode set Z_ 0.0
 #creates the Access Point (Base station)
 $ns node-config -adhocRouting $opt(adhocRouting) \
                  -llType $opt(ll) \
-                 -macType Mac/802_16/BS \
+                 -macType Mac/802_16/RS \
                  -ifqType $opt(ifq) \
                  -ifqLen $opt(ifqlen) \
                  -antType $opt(ant) \
@@ -152,7 +152,7 @@ $bstation set Z_ 0.0
 [$bstation set mac_(0)] set-channel 0
 
 # creation of the mobile nodes
-$ns node-config -macType Mac/802_16/RS \
+$ns node-config -macType Mac/802_16/SS \
                 -wiredRouting OFF \
                 -macTrace ON  				;# Mobile nodes cannot do routing.
 for {set i 0} {$i < $nb_mn} {incr i} {
