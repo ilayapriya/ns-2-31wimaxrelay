@@ -203,7 +203,7 @@ Mac802_16RS::init ()
     int nbPS_left = nbPS - phymib_.rtg - phymib_.ttg;
     int nbSymbols = (int) floor ((getPhy ()->getPS () * nbPS_left) / getPhy ()->getSymbolTime ());	// max num of OFDM symbols available per frame.
     int nbSubcarrier = getPhy ()->getFFT ();
-    //TODO revised: number of subchannels take into consideration Bu kısmın artık önemi kalmadı. Tek etkilediği yer IsCollision metodu onu da çağıran yok
+   
     int nbSubchannel = /*getPhy ()->getNumsubchannels (UL_)+*/getPhy ()->getNumsubchannels (DL_);
 
     intpower_ = (double **) malloc (nbSymbols * sizeof (double *));
@@ -757,7 +757,7 @@ Mac802_16RS::sendUp (Packet * p)
                 {
                     //Chakchai  => disable collission
                     Packet::free(p);
-                    //TODO revised no problem seen:Check here for BS it was commented before
+                   
                 }
                 else if (head_pkt_->p->txinfo_.RxPr / p->txinfo_.RxPr <=
                          p->txinfo_.CPThresh)
@@ -2198,8 +2198,7 @@ end:
 #ifdef WIMAX_DEBUG
     printf ("ARQ recv cid=%d: TxQueue=%d\n", con->get_cid (),
             con->getArqStatus ()->arq_trans_queue_->length ());
-    //TODO revised: buradan sonraki kısım SS de yok, heralde arq tranmissin ve retransmission queueları boşaltılıyor.
-    //TODO revised WIMAX_DEBUG not enabled so no problem: debug here
+
     con->getArqStatus ()->arq_trans_queue_->resetIterator ();
     p = con->getArqStatus ()->arq_trans_queue_->getNext ();
     while (p)
@@ -3679,7 +3678,8 @@ Mac802_16RS::update_throughput (ThroughputWatch * watch, double size)
 void
 Mac802_16RS::start_dlsubframe ()
 {
-    if (false)
+  int rand = (int)(Scheduler::instance().clock()*1000)%2;
+    if (rand)
     {
         //TODO : This function must be written carefully. There should be 2 ul and dl timer for bs and ss roles
         debug2 ("At %f in Mac %d RS scheduler dlsubframe expires %d\n", NOW,
@@ -3730,7 +3730,7 @@ Mac802_16RS::start_dlsubframe ()
         //reschedule for next frame
         dl_timer_->resched (getFrameDuration ());
         ul=0;
-    } else if (/*connected*/true) {
+    } else  {
 
         //************************
         //
@@ -3778,8 +3778,8 @@ Mac802_16RS::start_dlsubframe ()
                             getPhy ()->getPS ());
         ul = 1;
     }
-    else
-        ul=1;
+    /*else
+        ul=1;*/
 }
 
 /**
@@ -3788,8 +3788,9 @@ Mac802_16RS::start_dlsubframe ()
 void
 Mac802_16RS::start_ulsubframe ()
 {
+  int rand = (int)(Scheduler::instance().clock()*1000)%2;
     //TODO: In this function ulsubframe devided into two pieces for receive and send, observe the consequences
-    if (false)
+    if (rand)
     {
 
         debug ("At %f in Mac %d RS scheduler ulsubframe expires\n", NOW, addr ());

@@ -166,8 +166,7 @@ int RSScheduler::command(int argc, const char*const* argv)
 void RSScheduler::init ()
 {
     WimaxScheduler::init();
-//TODO remove this if statement
-    if (true) {
+
         // If the user did not set the profiles by hand, let's do it
         // automatically
         if (getMac()->getMap()->getDlSubframe()->getProfile (DIUC_PROFILE_1)==NULL)
@@ -223,7 +222,7 @@ void RSScheduler::init ()
         slot->setSize (getMac()->macmib_.bw_req_contention_size);
         slot->setBackoff_start (getMac()->macmib_.bw_backoff_start);
         slot->setBackoff_stop (getMac()->macmib_.bw_backoff_stop);
-    }
+    
 }
 
 /**
@@ -1215,9 +1214,10 @@ void RSScheduler::ssschedule()
  */
 void RSScheduler::schedule ()
 {
-
-    //ssschedule();
-
+int rand = (int)(Scheduler::instance().clock()*1000)%2;
+    if(rand){
+      ssschedule();
+    }
     //The scheduler will perform the following steps:
     //1-Clear UL map
     //2-Allocate CDMA-Ranging region for initial ranging (2 OFDMs) and bw-req (1 OFDMs)
@@ -1231,7 +1231,7 @@ void RSScheduler::schedule ()
     //7-Assign burst -> physical allocation
     //Note that, we do not simulate FCH in this version. We will do that in next version.
 //TODO remove this if statement
-    if (true) {
+    else {
         Packet *p;
         struct hdr_cmn *ch;
         double txtime; //tx time for some data (in second)
