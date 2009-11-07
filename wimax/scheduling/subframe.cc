@@ -25,15 +25,15 @@
 
 /**
  * Constructor
- * @param map The frame 
+ * @param map The frame
  */
 SubFrame::SubFrame (FrameMap *map)
 {
-  assert (map);
-  map_ = map;
-  ccc_ = 0;
-  nbProfile_ = 0;
-  LIST_INIT (&profile_list_);
+    assert (map);
+    map_ = map;
+    ccc_ = 0;
+    nbProfile_ = 0;
+    LIST_INIT (&profile_list_);
 }
 
 /**
@@ -41,7 +41,7 @@ SubFrame::SubFrame (FrameMap *map)
  */
 SubFrame::~SubFrame ()
 {
-  removeProfiles();
+    removeProfiles();
 }
 
 /**
@@ -52,11 +52,11 @@ SubFrame::~SubFrame ()
  */
 Profile * SubFrame::addProfile (int f, Ofdm_mod_rate enc)
 {
-  Profile *p = new Profile (this, f, enc);
-  p->insert_entry (&profile_list_);
-  nbProfile_++;
-  incrCCC();
-  return p;
+    Profile *p = new Profile (this, f, enc);
+    p->insert_entry (&profile_list_);
+    nbProfile_++;
+    incrCCC();
+    return p;
 }
 
 /**
@@ -66,9 +66,9 @@ Profile * SubFrame::addProfile (int f, Ofdm_mod_rate enc)
  */
 void SubFrame::removeProfile (Profile *p)
 {
-  p->remove_entry ();
-  nbProfile_--;
-  incrCCC();
+    p->remove_entry ();
+    nbProfile_--;
+    incrCCC();
 }
 
 /**
@@ -76,10 +76,10 @@ void SubFrame::removeProfile (Profile *p)
  */
 void SubFrame::removeProfiles ()
 {
-  for (Profile *p = profile_list_.lh_first; p ; p=profile_list_.lh_first) {
-    removeProfile (p);
-    delete (p);
-  }
+    for (Profile *p = profile_list_.lh_first; p ; p=profile_list_.lh_first) {
+        removeProfile (p);
+        delete (p);
+    }
 }
 
 /**
@@ -88,36 +88,36 @@ void SubFrame::removeProfiles ()
  */
 Profile * SubFrame::getProfile (int iuc)
 {
-  Profile *p;
-  for (p = profile_list_.lh_first; p ; p=p->next_entry()) {
-    if (p->getIUC()==iuc)
-      return p;
-  }
+    Profile *p;
+    for (p = profile_list_.lh_first; p ; p=p->next_entry()) {
+        if (p->getIUC()==iuc)
+            return p;
+    }
     return NULL;
 }
 
 /**
  * Return the number of profiles for this subframe
  */
-int SubFrame::getNbProfile () 
-{ 
-  return nbProfile_; 
+int SubFrame::getNbProfile ()
+{
+    return nbProfile_;
 }
 
 /**
  * Return the head of the profile list
  */
-Profile * SubFrame::getFirstProfile () 
-{ 
-  return profile_list_.lh_first; 
+Profile * SubFrame::getFirstProfile ()
+{
+    return profile_list_.lh_first;
 }
 
 /**
  * Return the Configuration Change count
  */
-int SubFrame::getCCC () 
-{ 
-  return ccc_; 
+int SubFrame::getCCC ()
+{
+    return ccc_;
 }
 
 /**
@@ -126,19 +126,19 @@ int SubFrame::getCCC ()
  */
 void SubFrame::incrCCC ()
 {
-  ccc_ = (ccc_+1)%256;
+    ccc_ = (ccc_+1)%256;
 }
 
 /*** end of super class ***/
 
 /**
  * Constructor
- * @param map The frame 
+ * @param map The frame
  */
 DlSubFrame::DlSubFrame (FrameMap *map): SubFrame(map)
 {
-  phypdu_ = new DlPhyPdu (map , 0); //no preamble by default
-  timer_ = new DlSubFrameTimer (this);
+    phypdu_ = new DlPhyPdu (map , 0); //no preamble by default
+    timer_ = new DlSubFrameTimer (this);
 }
 
 /**
@@ -146,23 +146,23 @@ DlSubFrame::DlSubFrame (FrameMap *map): SubFrame(map)
  */
 DlSubFrame::~DlSubFrame ()
 {
-  delete (phypdu_);
-  delete (timer_);
+    delete (phypdu_);
+    delete (timer_);
 }
 
 /*** class UlSubFrame ***/
 
 /**
  * Constructor
- * @param map The frame 
+ * @param map The frame
  */
 UlSubFrame::UlSubFrame (FrameMap *map): SubFrame(map)
 {
-  LIST_INIT (&phypdu_list_);
-  nbPhyPdu_ =0;
-  timer_ = new UlSubFrameTimer (this);
-  bw_req_ = new BwContentionSlot (map);
-  ranging_ = new RngContentionSlot (map);
+    LIST_INIT (&phypdu_list_);
+    nbPhyPdu_ =0;
+    timer_ = new UlSubFrameTimer (this);
+    bw_req_ = new BwContentionSlot (map);
+    ranging_ = new RngContentionSlot (map);
 }
 
 /**
@@ -170,13 +170,13 @@ UlSubFrame::UlSubFrame (FrameMap *map): SubFrame(map)
  */
 UlSubFrame::~UlSubFrame ()
 {
-  for (PhyPdu *p = phypdu_list_.lh_first; p ; p=phypdu_list_.lh_first) {
-    removePhyPdu (p);
-    delete (p);
-  }
-  delete (timer_);
-  delete (bw_req_);
-  delete (ranging_);
+    for (PhyPdu *p = phypdu_list_.lh_first; p ; p=phypdu_list_.lh_first) {
+        removePhyPdu (p);
+        delete (p);
+    }
+    delete (timer_);
+    delete (bw_req_);
+    delete (ranging_);
 }
 
 /**
@@ -187,23 +187,23 @@ UlSubFrame::~UlSubFrame ()
  */
 PhyPdu * UlSubFrame::addPhyPdu (int pos, int preamble)
 {
-  assert (pos >= 0 && pos <= nbPhyPdu_ );
-  UlPhyPdu *p = new UlPhyPdu (map_, preamble);
-  if (pos==0)
-    p->insert_entry_head (&phypdu_list_);
-  else {
-    PhyPdu *prev = phypdu_list_.lh_first;
-    PhyPdu *p2 = prev->next_entry();
-    int index = 1;
-    while (index < pos) {
-      prev=p2;
-      p2=p2->next_entry();
-      index++;
+    assert (pos >= 0 && pos <= nbPhyPdu_ );
+    UlPhyPdu *p = new UlPhyPdu (map_, preamble);
+    if (pos==0)
+        p->insert_entry_head (&phypdu_list_);
+    else {
+        PhyPdu *prev = phypdu_list_.lh_first;
+        PhyPdu *p2 = prev->next_entry();
+        int index = 1;
+        while (index < pos) {
+            prev=p2;
+            p2=p2->next_entry();
+            index++;
+        }
+        p->insert_entry (prev);
     }
-    p->insert_entry (prev);
-  }
-  nbPhyPdu_++;
-  return p;
+    nbPhyPdu_++;
+    return p;
 }
 
 /**
@@ -212,8 +212,8 @@ PhyPdu * UlSubFrame::addPhyPdu (int pos, int preamble)
  */
 void UlSubFrame::removePhyPdu (PhyPdu *p)
 {
-  p->remove_entry();
-  nbPhyPdu_--;
+    p->remove_entry();
+    nbPhyPdu_--;
 }
 
 /**
@@ -222,10 +222,10 @@ void UlSubFrame::removePhyPdu (PhyPdu *p)
  */
 PhyPdu* UlSubFrame::getPhyPdu(int pos)
 {
-  assert (pos >= 0 && pos < nbPhyPdu_ );
-  PhyPdu *p = phypdu_list_.lh_first ;
-  for (int i = 0 ; i < pos ; i++) {
-    p=p->next_entry();
-  }
-  return p;
+    assert (pos >= 0 && pos < nbPhyPdu_ );
+    PhyPdu *p = phypdu_list_.lh_first ;
+    for (int i = 0 ; i < pos ; i++) {
+        p=p->next_entry();
+    }
+    return p;
 }

@@ -20,7 +20,7 @@
 
 /**
  * Create an data object with the given attributes
- * @param nodeid The node 
+ * @param nodeid The node
  * @param duration The scanning duration
  * @param start The frame at which the scanning start
  * @param interleaving The interleaving interval
@@ -28,11 +28,11 @@
  */
 ScanningStation::ScanningStation (int nodeid, int duration, int start, int interleaving, int iteration)
 {
-  nodeid_ = nodeid;
-  duration_ = duration;
-  start_frame_ = start;
-  interleaving_ = interleaving;
-  iteration_ = iteration;
+    nodeid_ = nodeid;
+    duration_ = duration;
+    start_frame_ = start;
+    interleaving_ = interleaving;
+    iteration_ = iteration;
 }
 
 /**
@@ -41,10 +41,10 @@ ScanningStation::ScanningStation (int nodeid, int duration, int start, int inter
  */
 bool ScanningStation::isScanning (int frame)
 {
-  //printf ("isScanning %d frame=%d, start_frame=%d, duration=%d, interleaving=%d iteration %d\n", nodeid_, frame, start_frame_, duration_, interleaving_, iteration_);
-  if ((frame < start_frame_)||(frame > (start_frame_ + (duration_+interleaving_)*iteration_)))
-    return false;
-  else {
-    return (((frame-start_frame_)%(duration_+interleaving_))-duration_)<0;
-  }
+    //printf ("isScanning %d frame=%d, start_frame=%d, duration=%d, interleaving=%d iteration %d\n", nodeid_, frame, start_frame_, duration_, interleaving_, iteration_);
+    if ((frame < start_frame_)||(frame > (start_frame_ + (duration_+interleaving_)*iteration_)))
+        return false;
+    else {
+        return (((frame-start_frame_)%(duration_+interleaving_))-duration_)<0;
+    }
 }

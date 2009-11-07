@@ -23,28 +23,28 @@
  * Creates a burst
  * @param phypdu The PhyPdu where it is located
  */
-Burst::Burst (PhyPdu *phypdu) : cid_(-1), duration_(0), 
-                                starttime_(0),iuc_(-1),subchannelOffset_(0),numsubchannels_(0), b_cdma_code_(0), b_cdma_top_(0)
+Burst::Burst (PhyPdu *phypdu) : cid_(-1), duration_(0),
+        starttime_(0),iuc_(-1),subchannelOffset_(0),numsubchannels_(0), b_cdma_code_(0), b_cdma_top_(0)
 
 {
-  assert (phypdu);
-  phypdu_ = phypdu;
-  queue_ = NULL;
+    assert (phypdu);
+    phypdu_ = phypdu;
+    queue_ = NULL;
 }
 
 /*
  * Delete the object
  */
-Burst::~Burst () 
+Burst::~Burst ()
 {
-  //delete packets in queue
-  if (queue_!=NULL) {
-    for (Packet *p = dequeue(); p ; p=dequeue()) {
-      Packet::free (p);
+    //delete packets in queue
+    if (queue_!=NULL) {
+        for (Packet *p = dequeue(); p ; p=dequeue()) {
+            Packet::free (p);
+        }
+        delete (queue_);
     }
-    delete (queue_);
-  }
-} 
+}
 
 /**
  * Set burst CID
@@ -52,7 +52,7 @@ Burst::~Burst ()
  */
 void Burst::setCid( int cid )
 {
-  cid_ = cid;
+    cid_ = cid;
 }
 
 /**
@@ -61,16 +61,16 @@ void Burst::setCid( int cid )
  */
 int Burst::getCid( )
 {
-  return cid_;
+    return cid_;
 }
 
 /**
  * Return the burst duration in units of OFDM symbols
- * @return the burst duration 
+ * @return the burst duration
  */
 int Burst::getDuration( )
 {
-  return duration_;
+    return duration_;
 }
 
 /**
@@ -79,7 +79,7 @@ int Burst::getDuration( )
  */
 void Burst::setDuration (int duration)
 {
-  duration_=duration;
+    duration_=duration;
 }
 
 /**
@@ -88,7 +88,7 @@ void Burst::setDuration (int duration)
  */
 void Burst::setIUC( int iuc )
 {
-  iuc_ = iuc;
+    iuc_ = iuc;
 }
 
 /**
@@ -97,7 +97,7 @@ void Burst::setIUC( int iuc )
  */
 int Burst::getIUC( )
 {
-  return iuc_;
+    return iuc_;
 }
 
 /**
@@ -106,8 +106,8 @@ int Burst::getIUC( )
  */
 void Burst::setStarttime( int starttime )
 {
-  assert (starttime >= 0);
-  starttime_ = starttime;
+    assert (starttime >= 0);
+    starttime_ = starttime;
 }
 
 /**
@@ -116,34 +116,42 @@ void Burst::setStarttime( int starttime )
  */
 int Burst::getStarttime( )
 {
-  return starttime_;
+    return starttime_;
 }
 
 
 
-//rpi add for OFDMA 
+//rpi add for OFDMA
 
-  /** 
-   * return the subchannel offset
-   */
-int Burst::getSubchannelOffset () {return subchannelOffset_ ;}  
-  
-  /** 
-   * return the number of subchannels
-   */
-int Burst::getnumSubchannels () {return numsubchannels_;}
+/**
+ * return the subchannel offset
+ */
+int Burst::getSubchannelOffset () {
+    return subchannelOffset_ ;
+}
 
-  /** 
-   * set the number of subchannels
-   */
-void Burst::setnumSubchannels (int numsubchannels) { numsubchannels_ = numsubchannels;}
+/**
+ * return the number of subchannels
+ */
+int Burst::getnumSubchannels () {
+    return numsubchannels_;
+}
 
-  /** 
-   * set the subchannel offset- @param subchannel offset
-   */
-void Burst::setSubchannelOffset (int subchanneloffset) {subchannelOffset_ = subchanneloffset;}  
+/**
+ * set the number of subchannels
+ */
+void Burst::setnumSubchannels (int numsubchannels) {
+    numsubchannels_ = numsubchannels;
+}
 
-// rpi end add for OFDMA 
+/**
+ * set the subchannel offset- @param subchannel offset
+ */
+void Burst::setSubchannelOffset (int subchanneloffset) {
+    subchannelOffset_ = subchanneloffset;
+}
+
+// rpi end add for OFDMA
 
 
 
@@ -152,33 +160,33 @@ void Burst::setSubchannelOffset (int subchanneloffset) {subchannelOffset_ = subc
  * Enqueue the given packet
  * @param p The packet to enqueue
  */
-void Burst::enqueue (Packet * p) 
+void Burst::enqueue (Packet * p)
 {
-  if (queue_ == NULL) {
-    //this is the first packet we enqueue, create queue
-    queue_ = new PacketQueue();
-  }
-  queue_->enque (p);
+    if (queue_ == NULL) {
+        //this is the first packet we enqueue, create queue
+        queue_ = new PacketQueue();
+    }
+    queue_->enque (p);
 }
 
 /**
  * Dequeue a packet from the queue
  * @param p The packet to enqueue
  */
-Packet * Burst::dequeue () 
+Packet * Burst::dequeue ()
 {
-  if (queue_==NULL) //in case there was never an enqueue
-    return NULL;
-  return queue_->deque ();
+    if (queue_==NULL) //in case there was never an enqueue
+        return NULL;
+    return queue_->deque ();
 }
 
 /**
    * Return the queue size in bytes
    */
 int Burst::getQueueLength() {
-  if(queue_==NULL) 
-    return 0;
-  return queue_->byteLength();
+    if (queue_==NULL)
+        return 0;
+    return queue_->byteLength();
 }
 
 
@@ -188,20 +196,20 @@ int Burst::getQueueLength() {
  * Dequeue a packet from the queue
  * @param p The packet to enqueue
  */
-Packet * Burst::lookup (int n) 
+Packet * Burst::lookup (int n)
 {
-  if (queue_==NULL) //in case there was never an enqueue
-    return NULL;
-  return queue_->lookup (n);
+    if (queue_==NULL) //in case there was never an enqueue
+        return NULL;
+    return queue_->lookup (n);
 }
 
 /**
    * Return the queue size in packets
    */
 int Burst::getQueueLength_packets() {
-  if(queue_==NULL) 
-    return 0;
-  return queue_->length();
+    if (queue_==NULL)
+        return 0;
+    return queue_->length();
 }
 
 /**
@@ -210,9 +218,9 @@ int Burst::getQueueLength_packets() {
  */
 void Burst::remove(Packet* p)
 {
-  if(queue_==NULL) 
-    return;
-  queue_->remove (p);
+    if (queue_==NULL)
+        return;
+    queue_->remove (p);
 }
 
 //rpi added for dltimer

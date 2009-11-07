@@ -24,7 +24,7 @@
  */
 UlBurst::UlBurst (PhyPdu *phypdu) : Burst (phypdu)
 {
-  midamble_ = PREAMBLE_ONLY;
+    midamble_ = PREAMBLE_ONLY;
 }
 
 /**
@@ -34,31 +34,31 @@ UlBurst::UlBurst (PhyPdu *phypdu) : Burst (phypdu)
  */
 void UlBurst::setFastRangingParam (int macAddr, int uiuc)
 {
-  assert (getIUC() == UIUC_EXT_UIUC);
+    assert (getIUC() == UIUC_EXT_UIUC);
 
-  extuiuc_ = UIUC_FAST_RANGING;
-  uiuc2_ = uiuc;
-  macAddr_ = macAddr;
+    extuiuc_ = UIUC_FAST_RANGING;
+    uiuc2_ = uiuc;
+    macAddr_ = macAddr;
 }
 
-  
+
 /**
  * Return the mac address for fast ranging
  * @return The mac address for fast ranging
  */
 int UlBurst::getFastRangingMacAddr ()
 {
-  assert (extuiuc_ == UIUC_FAST_RANGING);
-  return macAddr_;
+    assert (extuiuc_ == UIUC_FAST_RANGING);
+    return macAddr_;
 }
 
 /**
  * Return the UIUC encoding to use
  * @return The UIUC encoding to use
  */
-int UlBurst::getFastRangingUIUC (){
-  assert (extuiuc_ == UIUC_FAST_RANGING);
-  return uiuc2_;
+int UlBurst::getFastRangingUIUC () {
+    assert (extuiuc_ == UIUC_FAST_RANGING);
+    return uiuc2_;
 }
 
 

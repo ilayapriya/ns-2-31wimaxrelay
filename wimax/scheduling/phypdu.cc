@@ -24,11 +24,11 @@
  */
 PhyPdu::PhyPdu (FrameMap *map, int preamble)
 {
-  assert (preamble >=0 && map);
-  preamble_ = preamble;
-  map_ = map;
-  nb_burst_=0;
-  LIST_INIT(&burst_list_);
+    assert (preamble >=0 && map);
+    preamble_ = preamble;
+    map_ = map;
+    nb_burst_=0;
+    LIST_INIT(&burst_list_);
 }
 
 /*
@@ -36,10 +36,10 @@ PhyPdu::PhyPdu (FrameMap *map, int preamble)
  */
 PhyPdu::~PhyPdu ()
 {
-  for (Burst *b = burst_list_.lh_first; b ; b=burst_list_.lh_first) {
-    b->remove_entry ();
-    delete (b);
-  }
+    for (Burst *b = burst_list_.lh_first; b ; b=burst_list_.lh_first) {
+        b->remove_entry ();
+        delete (b);
+    }
 }
 
 
@@ -49,8 +49,8 @@ PhyPdu::~PhyPdu ()
  */
 void PhyPdu::setPreamble( int preamble )
 {
-  assert (preamble>=0);
-  preamble_ = preamble;
+    assert (preamble>=0);
+    preamble_ = preamble;
 }
 
 /**
@@ -59,32 +59,32 @@ void PhyPdu::setPreamble( int preamble )
  */
 int PhyPdu::getPreamble( )
 {
-  return preamble_;
+    return preamble_;
 }
 
 /**
  * Add a burst in the PDU
- * @param pos The position of the burst 
+ * @param pos The position of the burst
  */
 Burst* PhyPdu::addBurst(int pos)
 {
-  assert (pos >= 0 && pos <= nb_burst_ );
-  Burst *b = new Burst (this);
-  if (pos==0)
-    b->insert_entry_head (&burst_list_);
-  else {
-    Burst *prev = burst_list_.lh_first ;
-    Burst *b2 = prev->next_entry();
-    int index = 1;
-    while (index < pos) {
-      prev=b2;
-      b2=b2->next_entry();
-      index++;
+    assert (pos >= 0 && pos <= nb_burst_ );
+    Burst *b = new Burst (this);
+    if (pos==0)
+        b->insert_entry_head (&burst_list_);
+    else {
+        Burst *prev = burst_list_.lh_first ;
+        Burst *b2 = prev->next_entry();
+        int index = 1;
+        while (index < pos) {
+            prev=b2;
+            b2=b2->next_entry();
+            index++;
+        }
+        b->insert_entry (prev);
     }
-    b->insert_entry (prev);
-  }
-  nb_burst_++;
-  return b;
+    nb_burst_++;
+    return b;
 }
 
 /**
@@ -93,22 +93,22 @@ Burst* PhyPdu::addBurst(int pos)
  */
 void PhyPdu::removeBurst(Burst *b)
 {
-  b->remove_entry();
-  nb_burst_--;
+    b->remove_entry();
+    nb_burst_--;
 }
 
-/** 
+/**
  * Clear all the bursts in the list
  */
 void PhyPdu::removeAllBursts ()
 {
-  Burst *b;
-  while (nb_burst_>0) {
-    b = getBurst(0);
-    removeBurst (b);
-    delete (b);
-  }
-  assert (nb_burst_==0);
+    Burst *b;
+    while (nb_burst_>0) {
+        b = getBurst(0);
+        removeBurst (b);
+        delete (b);
+    }
+    assert (nb_burst_==0);
 }
 
 /**
@@ -117,12 +117,12 @@ void PhyPdu::removeAllBursts ()
  */
 Burst* PhyPdu::getBurst(int pos)
 {
-  assert (pos >= 0 && pos < nb_burst_ );
-  Burst *b = burst_list_.lh_first ;
-  for (int i = 0 ; i < pos ; i++) {
-    b=b->next_entry();
-  }
-  return b;
+    assert (pos >= 0 && pos < nb_burst_ );
+    Burst *b = burst_list_.lh_first ;
+    for (int i = 0 ; i < pos ; i++) {
+        b=b->next_entry();
+    }
+    return b;
 }
 
 /** Methods for class DlPhyPdu **/
@@ -138,27 +138,27 @@ DlPhyPdu::DlPhyPdu (FrameMap *map, int preamble) : PhyPdu(map, preamble)
 
 /**
  * Add a burst in the PDU
- * @param pos The position of the burst 
+ * @param pos The position of the burst
  */
 Burst* DlPhyPdu::addBurst(int pos)
 {
-  assert (pos >= 0 && pos <= nb_burst_ );
-  DlBurst *b = new DlBurst (this);
-  if (pos==0 || nb_burst_==0)
-    b->insert_entry_head (&burst_list_);
-  else {
-    Burst *prev = burst_list_.lh_first ;
-    Burst *b2 = prev->next_entry();
-    int index = 1;
-    while (b2 && index < pos) {
-      prev=b2;
-      b2=b2->next_entry();
-      index++;
+    assert (pos >= 0 && pos <= nb_burst_ );
+    DlBurst *b = new DlBurst (this);
+    if (pos==0 || nb_burst_==0)
+        b->insert_entry_head (&burst_list_);
+    else {
+        Burst *prev = burst_list_.lh_first ;
+        Burst *b2 = prev->next_entry();
+        int index = 1;
+        while (b2 && index < pos) {
+            prev=b2;
+            b2=b2->next_entry();
+            index++;
+        }
+        b->insert_entry (prev);
     }
-    b->insert_entry (prev);
-  }
-  nb_burst_++;
-  return b;
+    nb_burst_++;
+    return b;
 }
 
 
@@ -175,14 +175,14 @@ UlPhyPdu::UlPhyPdu (FrameMap *map, int preamble) : PhyPdu(map, preamble)
 
 /**
  * Add a burst in the PDU
- * @param pos The position of the burst 
+ * @param pos The position of the burst
  */
 Burst* UlPhyPdu::addBurst(int pos)
 {
-  //UlPhyPdu only have one burst
-  assert (pos == 0 && nb_burst_==0 );
-  UlBurst *b = new UlBurst (this);
-  b->insert_entry_head (&burst_list_);
-  nb_burst_++;
-  return b;
+    //UlPhyPdu only have one burst
+    assert (pos == 0 && nb_burst_==0 );
+    UlBurst *b = new UlBurst (this);
+    b->insert_entry_head (&burst_list_);
+    nb_burst_++;
+    return b;
 }

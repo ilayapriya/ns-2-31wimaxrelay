@@ -22,12 +22,12 @@
 
 /*
  * Creates a contention slot for the given frame
- * @param frame The frame map 
+ * @param frame The frame map
  */
-ContentionSlot::ContentionSlot (FrameMap *map) 
+ContentionSlot::ContentionSlot (FrameMap *map)
 {
-  assert (map);
-  map_ = map;
+    assert (map);
+    map_ = map;
 }
 
 /**
@@ -39,18 +39,18 @@ ContentionSlot::~ContentionSlot() {}
  * Set the initial contention slot window size
  * @param backoff_start the initial contention slot window size
  */
-void ContentionSlot::setBackoff_start( int backoff_start ) 
-{ 
-  backoff_start_ = backoff_start;
+void ContentionSlot::setBackoff_start( int backoff_start )
+{
+    backoff_start_ = backoff_start;
 }
 
 /*
  * Set the final contention slot window size
- * @param backoff_stop the final contention slot window size 
+ * @param backoff_stop the final contention slot window size
  */
-void ContentionSlot::setBackoff_stop( int backoff_stop ) 
-{ 
-  backoff_stop_ = backoff_stop;
+void ContentionSlot::setBackoff_stop( int backoff_stop )
+{
+    backoff_stop_ = backoff_stop;
 }
 
 /**
@@ -67,7 +67,7 @@ void ContentionSlot::pauseTimers () {}
 
 /*
  * Creates a contention slot for the given frame
- * @param frame The frame map 
+ * @param frame The frame map
  */
 /*
 RngContentionSlot::RngContentionSlot (FrameMap *map) : ContentionSlot (map)
@@ -80,7 +80,7 @@ RngContentionSlot::RngContentionSlot (FrameMap *map) : ContentionSlot (map)
  * Destructor
  */
 /*
-RngContentionSlot::~RngContentionSlot() 
+RngContentionSlot::~RngContentionSlot()
 {
   if (request_)
     delete request_;
@@ -144,7 +144,7 @@ void RngContentionSlot::pauseTimers ()
  */
 RngContentionSlot::RngContentionSlot (FrameMap *map) : ContentionSlot (map)
 {
-  LIST_INIT (&request_list_);
+    LIST_INIT (&request_list_);
 }
 
 /**
@@ -154,18 +154,18 @@ RngContentionSlot::~RngContentionSlot() {}
 
 void RngContentionSlot::addRequest (Packet *p, int cid, int len, int backoff, int timeout, int nbretry, int window, int code, int top, int flagtransmit, int flagnowtransmit, int addr)
 {
-  RngRequest *b = new RngRequest (this, p, cid, len, backoff, timeout, nbretry, window, code, top, flagtransmit, flagnowtransmit, addr);
-  b->insert_entry_head (&request_list_);
+    RngRequest *b = new RngRequest (this, p, cid, len, backoff, timeout, nbretry, window, code, top, flagtransmit, flagnowtransmit, addr);
+    b->insert_entry_head (&request_list_);
 }
 
 
 void RngContentionSlot::removeRequest_mac (int addr)
 {
-  RngRequest *b = getRequest_mac (addr);
-  if (b!=NULL) {
-    b->remove_entry ();
-    delete b;
-  }
+    RngRequest *b = getRequest_mac (addr);
+    if (b!=NULL) {
+        b->remove_entry ();
+        delete b;
+    }
 }
 
 /*
@@ -173,10 +173,10 @@ void RngContentionSlot::removeRequest_mac (int addr)
  */
 void RngContentionSlot::removeRequests ()
 {
-  for (RngRequest *c = (RngRequest *)request_list_.lh_first; c ; c=(RngRequest *)request_list_.lh_first) {
-    c->remove_entry();
-    delete c;
-  }
+    for (RngRequest *c = (RngRequest *)request_list_.lh_first; c ; c=(RngRequest *)request_list_.lh_first) {
+        c->remove_entry();
+        delete c;
+    }
 }
 
 /*
@@ -184,20 +184,21 @@ void RngContentionSlot::removeRequests ()
  */
 RngRequest* RngContentionSlot::getRequest_mac (int addr)
 {
-  for (RngRequest *c = (RngRequest *)request_list_.lh_first; c ; c=(RngRequest *)(c->next_entry())) {
-    if (c->getADDR()==addr) return c;
-  }
-  return NULL;
+    for (RngRequest *c = (RngRequest *)request_list_.lh_first; c ; c=(RngRequest *)(c->next_entry())) {
+        if (c->getADDR()==addr) return c;
+    }
+    return NULL;
 }
 
 /*
  * Return packet for cdma initial ranging request
  */
 Packet * RngContentionSlot::getPacket_P_mac (int addr)
-{  for (RngRequest *c = (RngRequest *)request_list_.lh_first; c ; c=(RngRequest *)(c->next_entry())) {
-    if (c->getADDR()==addr) return c->getPacket_P_mac();
-  }
-  return NULL;
+{
+    for (RngRequest *c = (RngRequest *)request_list_.lh_first; c ; c=(RngRequest *)(c->next_entry())) {
+        if (c->getADDR()==addr) return c->getPacket_P_mac();
+    }
+    return NULL;
 }
 
 /*
@@ -205,10 +206,10 @@ Packet * RngContentionSlot::getPacket_P_mac (int addr)
  */
 int RngContentionSlot::getCID (int addr)
 {
-  for (RngRequest *c = (RngRequest *)request_list_.lh_first; c ; c=(RngRequest *)(c->next_entry())) {
-    if (c->getADDR()==addr) return c->getCID();
-  }
-  return -1;
+    for (RngRequest *c = (RngRequest *)request_list_.lh_first; c ; c=(RngRequest *)(c->next_entry())) {
+        if (c->getADDR()==addr) return c->getCID();
+    }
+    return -1;
 }
 
 /*
@@ -216,10 +217,10 @@ int RngContentionSlot::getCID (int addr)
  */
 int RngContentionSlot::getBACKOFF (int addr)
 {
-  for (RngRequest *c = (RngRequest *)request_list_.lh_first; c ; c=(RngRequest *)(c->next_entry())) {
-    if (c->getADDR()==addr) return c->getBACKOFF();
-  }
-  return -1;
+    for (RngRequest *c = (RngRequest *)request_list_.lh_first; c ; c=(RngRequest *)(c->next_entry())) {
+        if (c->getADDR()==addr) return c->getBACKOFF();
+    }
+    return -1;
 }
 
 /*
@@ -227,10 +228,10 @@ int RngContentionSlot::getBACKOFF (int addr)
  */
 int RngContentionSlot::getTIMEOUT (int addr)
 {
-  for (RngRequest *c = (RngRequest *)request_list_.lh_first; c ; c=(RngRequest *)(c->next_entry())) {
-    if (c->getADDR()==addr) return c->getTIMEOUT();
-  }
-  return -1;
+    for (RngRequest *c = (RngRequest *)request_list_.lh_first; c ; c=(RngRequest *)(c->next_entry())) {
+        if (c->getADDR()==addr) return c->getTIMEOUT();
+    }
+    return -1;
 }
 
 /*
@@ -238,10 +239,10 @@ int RngContentionSlot::getTIMEOUT (int addr)
  */
 int RngContentionSlot::getNBRETRY (int addr)
 {
-  for (RngRequest *c = (RngRequest *)request_list_.lh_first; c ; c=(RngRequest *)(c->next_entry())) {
-    if (c->getADDR()==addr) return c->getNBRETRY();
-  }
-  return -1;
+    for (RngRequest *c = (RngRequest *)request_list_.lh_first; c ; c=(RngRequest *)(c->next_entry())) {
+        if (c->getADDR()==addr) return c->getNBRETRY();
+    }
+    return -1;
 }
 
 /*
@@ -249,10 +250,10 @@ int RngContentionSlot::getNBRETRY (int addr)
  */
 int RngContentionSlot::getWINDOW (int addr)
 {
-  for (RngRequest *c = (RngRequest *)request_list_.lh_first; c ; c=(RngRequest *)(c->next_entry())) {
-    if (c->getADDR()==addr) return c->getWINDOW();
-  }
-  return -1;
+    for (RngRequest *c = (RngRequest *)request_list_.lh_first; c ; c=(RngRequest *)(c->next_entry())) {
+        if (c->getADDR()==addr) return c->getWINDOW();
+    }
+    return -1;
 }
 
 /*
@@ -260,10 +261,10 @@ int RngContentionSlot::getWINDOW (int addr)
  */
 int RngContentionSlot::getCODE (int addr)
 {
-  for (RngRequest *c = (RngRequest *)request_list_.lh_first; c ; c=(RngRequest *)(c->next_entry())) {
-    if (c->getADDR()==addr) return c->getCODE();
-  }
-  return -1;
+    for (RngRequest *c = (RngRequest *)request_list_.lh_first; c ; c=(RngRequest *)(c->next_entry())) {
+        if (c->getADDR()==addr) return c->getCODE();
+    }
+    return -1;
 }
 
 /*
@@ -271,10 +272,10 @@ int RngContentionSlot::getCODE (int addr)
  */
 int RngContentionSlot::getTOP (int addr)
 {
-  for (RngRequest *c = (RngRequest *)request_list_.lh_first; c ; c=(RngRequest *)(c->next_entry())) {
-    if (c->getADDR()==addr) return c->getTOP();
-  }
-  return -1;
+    for (RngRequest *c = (RngRequest *)request_list_.lh_first; c ; c=(RngRequest *)(c->next_entry())) {
+        if (c->getADDR()==addr) return c->getTOP();
+    }
+    return -1;
 }
 
 /*
@@ -282,10 +283,10 @@ int RngContentionSlot::getTOP (int addr)
  */
 int RngContentionSlot::getFLAGTRANSMIT (int addr)
 {
-  for (RngRequest *c = (RngRequest *)request_list_.lh_first; c ; c=(RngRequest *)(c->next_entry())) {
-    if (c->getADDR()==addr) return c->getFLAGTRANSMIT();
-  }
-  return -1;
+    for (RngRequest *c = (RngRequest *)request_list_.lh_first; c ; c=(RngRequest *)(c->next_entry())) {
+        if (c->getADDR()==addr) return c->getFLAGTRANSMIT();
+    }
+    return -1;
 }
 
 /*
@@ -293,10 +294,10 @@ int RngContentionSlot::getFLAGTRANSMIT (int addr)
  */
 int RngContentionSlot::getFLAGNOWTRANSMIT (int addr)
 {
-  for (RngRequest *c = (RngRequest *)request_list_.lh_first; c ; c=(RngRequest *)(c->next_entry())) {
-    if (c->getADDR()==addr) return c->getFLAGNOWTRANSMIT();
-  }
-  return -1;
+    for (RngRequest *c = (RngRequest *)request_list_.lh_first; c ; c=(RngRequest *)(c->next_entry())) {
+        if (c->getADDR()==addr) return c->getFLAGNOWTRANSMIT();
+    }
+    return -1;
 }
 
 /*
@@ -304,9 +305,9 @@ int RngContentionSlot::getFLAGNOWTRANSMIT (int addr)
  */
 void RngContentionSlot::setBACKOFF (int addr, int backoff)
 {
-  for (RngRequest *c = (RngRequest *)request_list_.lh_first; c ; c=(RngRequest *)(c->next_entry())) {
-    if (c->getADDR()==addr) c->setBACKOFF(backoff);
-  }
+    for (RngRequest *c = (RngRequest *)request_list_.lh_first; c ; c=(RngRequest *)(c->next_entry())) {
+        if (c->getADDR()==addr) c->setBACKOFF(backoff);
+    }
 }
 
 /*
@@ -314,9 +315,9 @@ void RngContentionSlot::setBACKOFF (int addr, int backoff)
  */
 void RngContentionSlot::setCID (int addr, int cid)
 {
-  for (RngRequest *c = (RngRequest *)request_list_.lh_first; c ; c=(RngRequest *)(c->next_entry())) {
-    if (c->getADDR()==addr) c->setCID(cid);
-  }
+    for (RngRequest *c = (RngRequest *)request_list_.lh_first; c ; c=(RngRequest *)(c->next_entry())) {
+        if (c->getADDR()==addr) c->setCID(cid);
+    }
 }
 
 /*
@@ -324,9 +325,9 @@ void RngContentionSlot::setCID (int addr, int cid)
  */
 void RngContentionSlot::setTIMEOUT (int addr, int timeout)
 {
-  for (RngRequest *c = (RngRequest *)request_list_.lh_first; c ; c=(RngRequest *)(c->next_entry())) {
-    if (c->getADDR()==addr) c->setTIMEOUT(timeout);
-  }
+    for (RngRequest *c = (RngRequest *)request_list_.lh_first; c ; c=(RngRequest *)(c->next_entry())) {
+        if (c->getADDR()==addr) c->setTIMEOUT(timeout);
+    }
 }
 
 /*
@@ -334,9 +335,9 @@ void RngContentionSlot::setTIMEOUT (int addr, int timeout)
  */
 void RngContentionSlot::setNBRETRY (int addr, int nbretry)
 {
-  for (RngRequest *c = (RngRequest *)request_list_.lh_first; c ; c=(RngRequest *)(c->next_entry())) {
-    if (c->getADDR()==addr) c->setNBRETRY(nbretry);
-  }
+    for (RngRequest *c = (RngRequest *)request_list_.lh_first; c ; c=(RngRequest *)(c->next_entry())) {
+        if (c->getADDR()==addr) c->setNBRETRY(nbretry);
+    }
 }
 
 /*
@@ -344,9 +345,9 @@ void RngContentionSlot::setNBRETRY (int addr, int nbretry)
  */
 void RngContentionSlot::setWINDOW (int addr, int window)
 {
-  for (RngRequest *c = (RngRequest *)request_list_.lh_first; c ; c=(RngRequest *)(c->next_entry())) {
-    if (c->getADDR()==addr) c->setWINDOW(window);
-  }
+    for (RngRequest *c = (RngRequest *)request_list_.lh_first; c ; c=(RngRequest *)(c->next_entry())) {
+        if (c->getADDR()==addr) c->setWINDOW(window);
+    }
 }
 
 /*
@@ -354,9 +355,9 @@ void RngContentionSlot::setWINDOW (int addr, int window)
  */
 void RngContentionSlot::setCODE (int addr, int code)
 {
-  for (RngRequest *c = (RngRequest *)request_list_.lh_first; c ; c=(RngRequest *)(c->next_entry())) {
-    if (c->getADDR()==addr) c->setCODE(code);
-  }
+    for (RngRequest *c = (RngRequest *)request_list_.lh_first; c ; c=(RngRequest *)(c->next_entry())) {
+        if (c->getADDR()==addr) c->setCODE(code);
+    }
 }
 
 /*
@@ -364,9 +365,9 @@ void RngContentionSlot::setCODE (int addr, int code)
  */
 void RngContentionSlot::setTOP (int addr, int top)
 {
-  for (RngRequest *c = (RngRequest *)request_list_.lh_first; c ; c=(RngRequest *)(c->next_entry())) {
-    if (c->getADDR()==addr) c->setTOP(top);
-  }
+    for (RngRequest *c = (RngRequest *)request_list_.lh_first; c ; c=(RngRequest *)(c->next_entry())) {
+        if (c->getADDR()==addr) c->setTOP(top);
+    }
 }
 
 /*
@@ -374,9 +375,9 @@ void RngContentionSlot::setTOP (int addr, int top)
  */
 void RngContentionSlot::setFLAGTRANSMIT (int addr, int flagtransmit)
 {
-  for (RngRequest *c = (RngRequest *)request_list_.lh_first; c ; c=(RngRequest *)(c->next_entry())) {
-    if (c->getADDR()==addr) c->setFLAGTRANSMIT(flagtransmit);
-  }
+    for (RngRequest *c = (RngRequest *)request_list_.lh_first; c ; c=(RngRequest *)(c->next_entry())) {
+        if (c->getADDR()==addr) c->setFLAGTRANSMIT(flagtransmit);
+    }
 }
 
 /*
@@ -384,9 +385,9 @@ void RngContentionSlot::setFLAGTRANSMIT (int addr, int flagtransmit)
  */
 void RngContentionSlot::setFLAGNOWTRANSMIT (int addr, int flagnowtransmit)
 {
-  for (RngRequest *c = (RngRequest *)request_list_.lh_first; c ; c=(RngRequest *)(c->next_entry())) {
-    if (c->getADDR()==addr) c->setFLAGNOWTRANSMIT(flagnowtransmit);
-  }
+    for (RngRequest *c = (RngRequest *)request_list_.lh_first; c ; c=(RngRequest *)(c->next_entry())) {
+        if (c->getADDR()==addr) c->setFLAGNOWTRANSMIT(flagnowtransmit);
+    }
 }
 
 /*
@@ -394,9 +395,9 @@ void RngContentionSlot::setFLAGNOWTRANSMIT (int addr, int flagnowtransmit)
  */
 void RngContentionSlot::setPacket_P_mac (int addr, Packet * p)
 {
-  for (RngRequest *c = (RngRequest *)request_list_.lh_first; c ; c=(RngRequest *)(c->next_entry())) {
-    if (c->getADDR()==addr) c->setPacket_P_mac(p);
-  }
+    for (RngRequest *c = (RngRequest *)request_list_.lh_first; c ; c=(RngRequest *)(c->next_entry())) {
+        if (c->getADDR()==addr) c->setPacket_P_mac(p);
+    }
 }
 
 /**
@@ -404,9 +405,9 @@ void RngContentionSlot::setPacket_P_mac (int addr, Packet * p)
  */
 void RngContentionSlot::resumeTimers (double duration)
 {
-  for (RngRequest *c = (RngRequest *)request_list_.lh_first; c ; c=(RngRequest *)(c->next_entry())) {
-      c->resume(duration);
-  }
+    for (RngRequest *c = (RngRequest *)request_list_.lh_first; c ; c=(RngRequest *)(c->next_entry())) {
+        c->resume(duration);
+    }
 }
 
 /**
@@ -414,19 +415,19 @@ void RngContentionSlot::resumeTimers (double duration)
  */
 void RngContentionSlot::pauseTimers ()
 {
-  for (RngRequest *c = (RngRequest *)request_list_.lh_first; c ; c=(RngRequest *)(c->next_entry())) {
-      c->pause();
-  }
+    for (RngRequest *c = (RngRequest *)request_list_.lh_first; c ; c=(RngRequest *)(c->next_entry())) {
+        c->pause();
+    }
 }
 
 /**** Methods for CDAM Bandwidth Contention slot ****/
 /*
  * Creates a contention slot for the given frame
- * @param frame The frame map 
+ * @param frame The frame map
  */
 BwContentionSlot::BwContentionSlot (FrameMap *map) : ContentionSlot (map)
 {
-  LIST_INIT (&request_list_);
+    LIST_INIT (&request_list_);
 }
 
 /**
@@ -450,9 +451,9 @@ void BwContentionSlot::addRequest (Packet *p, int cid, int len)
 */
 void BwContentionSlot::addRequest (Packet *p, int cid, int len, int backoff, int timeout, int nbretry, int window, int code, int top, int flagtransmit, int flagnowtransmit)
 {
-  assert (getRequest (cid)==NULL);
-  BwRequest *b = new BwRequest (this, p, cid, len, backoff, timeout, nbretry, window, code, top, flagtransmit, flagnowtransmit);
-  b->insert_entry_head (&request_list_);
+    assert (getRequest (cid)==NULL);
+    BwRequest *b = new BwRequest (this, p, cid, len, backoff, timeout, nbretry, window, code, top, flagtransmit, flagnowtransmit);
+    b->insert_entry_head (&request_list_);
 }
 
 
@@ -461,11 +462,11 @@ void BwContentionSlot::addRequest (Packet *p, int cid, int len, int backoff, int
  */
 void BwContentionSlot::removeRequest (int cid)
 {
-  BwRequest *b = getRequest (cid);
-  if (b!=NULL) {
-    b->remove_entry ();
-    delete b;
-  }
+    BwRequest *b = getRequest (cid);
+    if (b!=NULL) {
+        b->remove_entry ();
+        delete b;
+    }
 }
 
 /*
@@ -473,10 +474,10 @@ void BwContentionSlot::removeRequest (int cid)
  */
 void BwContentionSlot::removeRequests ()
 {
-  for (BwRequest *c = (BwRequest *)request_list_.lh_first; c ; c=(BwRequest *)request_list_.lh_first) {
-    c->remove_entry();
-    delete c;
-  }
+    for (BwRequest *c = (BwRequest *)request_list_.lh_first; c ; c=(BwRequest *)request_list_.lh_first) {
+        c->remove_entry();
+        delete c;
+    }
 }
 
 
@@ -486,22 +487,23 @@ void BwContentionSlot::removeRequests ()
  */
 BwRequest* BwContentionSlot::getRequest (int cid)
 {
-  for (BwRequest *c = (BwRequest *)request_list_.lh_first; c ; c=(BwRequest *)(c->next_entry())) {
-    if (c->getCID()==cid)
-      return c;
-  }
-  return NULL;
+    for (BwRequest *c = (BwRequest *)request_list_.lh_first; c ; c=(BwRequest *)(c->next_entry())) {
+        if (c->getCID()==cid)
+            return c;
+    }
+    return NULL;
 }
 
 /*
  * Return packet for cdma bw-req given cid
  */
 Packet * BwContentionSlot::getPacket_P (int cid)
-{  for (BwRequest *c = (BwRequest *)request_list_.lh_first; c ; c=(BwRequest *)(c->next_entry())) {
-    if (c->getCID()==cid)
-      return c->getPacket_P(); 
-  }
-  return NULL;
+{
+    for (BwRequest *c = (BwRequest *)request_list_.lh_first; c ; c=(BwRequest *)(c->next_entry())) {
+        if (c->getCID()==cid)
+            return c->getPacket_P();
+    }
+    return NULL;
 }
 
 /*
@@ -509,23 +511,23 @@ Packet * BwContentionSlot::getPacket_P (int cid)
  */
 int BwContentionSlot::getBACKOFF (int cid)
 {
-  for (BwRequest *c = (BwRequest *)request_list_.lh_first; c ; c=(BwRequest *)(c->next_entry())) {
-    if (c->getCID()==cid)
-      return c->getBACKOFF();
-  }
-  return -1;
-}   
-    
+    for (BwRequest *c = (BwRequest *)request_list_.lh_first; c ; c=(BwRequest *)(c->next_entry())) {
+        if (c->getCID()==cid)
+            return c->getBACKOFF();
+    }
+    return -1;
+}
+
 /*
  * Return timeout for cdma bw-req given cid
  */
 int BwContentionSlot::getTIMEOUT (int cid)
 {
-  for (BwRequest *c = (BwRequest *)request_list_.lh_first; c ; c=(BwRequest *)(c->next_entry())) {
-    if (c->getCID()==cid)
-      return c->getTIMEOUT();
-  }
-  return -1;
+    for (BwRequest *c = (BwRequest *)request_list_.lh_first; c ; c=(BwRequest *)(c->next_entry())) {
+        if (c->getCID()==cid)
+            return c->getTIMEOUT();
+    }
+    return -1;
 }
 
 /*
@@ -533,11 +535,11 @@ int BwContentionSlot::getTIMEOUT (int cid)
  */
 int BwContentionSlot::getNBRETRY (int cid)
 {
-  for (BwRequest *c = (BwRequest *)request_list_.lh_first; c ; c=(BwRequest *)(c->next_entry())) {
-    if (c->getCID()==cid)
-      return c->getNBRETRY();
-  }
-  return -1;
+    for (BwRequest *c = (BwRequest *)request_list_.lh_first; c ; c=(BwRequest *)(c->next_entry())) {
+        if (c->getCID()==cid)
+            return c->getNBRETRY();
+    }
+    return -1;
 }
 
 /*
@@ -545,11 +547,11 @@ int BwContentionSlot::getNBRETRY (int cid)
  */
 int BwContentionSlot::getWINDOW (int cid)
 {
-  for (BwRequest *c = (BwRequest *)request_list_.lh_first; c ; c=(BwRequest *)(c->next_entry())) {
-    if (c->getCID()==cid)
-      return c->getWINDOW();
-  }
-  return -1;
+    for (BwRequest *c = (BwRequest *)request_list_.lh_first; c ; c=(BwRequest *)(c->next_entry())) {
+        if (c->getCID()==cid)
+            return c->getWINDOW();
+    }
+    return -1;
 }
 
 /*
@@ -557,11 +559,11 @@ int BwContentionSlot::getWINDOW (int cid)
  */
 int BwContentionSlot::getCODE (int cid)
 {
-  for (BwRequest *c = (BwRequest *)request_list_.lh_first; c ; c=(BwRequest *)(c->next_entry())) {
-    if (c->getCID()==cid)
-      return c->getCODE();
-  }
-  return -1;
+    for (BwRequest *c = (BwRequest *)request_list_.lh_first; c ; c=(BwRequest *)(c->next_entry())) {
+        if (c->getCID()==cid)
+            return c->getCODE();
+    }
+    return -1;
 }
 
 /*
@@ -569,11 +571,11 @@ int BwContentionSlot::getCODE (int cid)
  */
 int BwContentionSlot::getTOP (int cid)
 {
-  for (BwRequest *c = (BwRequest *)request_list_.lh_first; c ; c=(BwRequest *)(c->next_entry())) {
-    if (c->getCID()==cid)
-      return c->getTOP();
-  }
-  return -1;
+    for (BwRequest *c = (BwRequest *)request_list_.lh_first; c ; c=(BwRequest *)(c->next_entry())) {
+        if (c->getCID()==cid)
+            return c->getTOP();
+    }
+    return -1;
 }
 
 /*
@@ -581,11 +583,11 @@ int BwContentionSlot::getTOP (int cid)
  */
 int BwContentionSlot::getFLAGTRANSMIT (int cid)
 {
-  for (BwRequest *c = (BwRequest *)request_list_.lh_first; c ; c=(BwRequest *)(c->next_entry())) {
-    if (c->getCID()==cid)
-      return c->getFLAGTRANSMIT();
-  }
-  return -1;
+    for (BwRequest *c = (BwRequest *)request_list_.lh_first; c ; c=(BwRequest *)(c->next_entry())) {
+        if (c->getCID()==cid)
+            return c->getFLAGTRANSMIT();
+    }
+    return -1;
 }
 
 /*
@@ -593,11 +595,11 @@ int BwContentionSlot::getFLAGTRANSMIT (int cid)
  */
 int BwContentionSlot::getFLAGNOWTRANSMIT (int cid)
 {
-  for (BwRequest *c = (BwRequest *)request_list_.lh_first; c ; c=(BwRequest *)(c->next_entry())) {
-    if (c->getCID()==cid)
-      return c->getFLAGNOWTRANSMIT();
-  }
-  return -1;
+    for (BwRequest *c = (BwRequest *)request_list_.lh_first; c ; c=(BwRequest *)(c->next_entry())) {
+        if (c->getCID()==cid)
+            return c->getFLAGNOWTRANSMIT();
+    }
+    return -1;
 }
 
 /*
@@ -605,11 +607,11 @@ int BwContentionSlot::getFLAGNOWTRANSMIT (int cid)
  */
 void BwContentionSlot::setBACKOFF (int cid, int backoff)
 {
-  for (BwRequest *c = (BwRequest *)request_list_.lh_first; c ; c=(BwRequest *)(c->next_entry())) {
-    if (c->getCID()==cid) {
-      c->setBACKOFF(backoff);
+    for (BwRequest *c = (BwRequest *)request_list_.lh_first; c ; c=(BwRequest *)(c->next_entry())) {
+        if (c->getCID()==cid) {
+            c->setBACKOFF(backoff);
+        }
     }
-  }
 }
 
 /*
@@ -617,11 +619,11 @@ void BwContentionSlot::setBACKOFF (int cid, int backoff)
  */
 void BwContentionSlot::setTIMEOUT (int cid, int timeout)
 {
-  for (BwRequest *c = (BwRequest *)request_list_.lh_first; c ; c=(BwRequest *)(c->next_entry())) {
-    if (c->getCID()==cid) {
-      c->setTIMEOUT(timeout);
+    for (BwRequest *c = (BwRequest *)request_list_.lh_first; c ; c=(BwRequest *)(c->next_entry())) {
+        if (c->getCID()==cid) {
+            c->setTIMEOUT(timeout);
+        }
     }
-  }
 }
 
 /*
@@ -629,11 +631,11 @@ void BwContentionSlot::setTIMEOUT (int cid, int timeout)
  */
 void BwContentionSlot::setNBRETRY (int cid, int nbretry)
 {
-  for (BwRequest *c = (BwRequest *)request_list_.lh_first; c ; c=(BwRequest *)(c->next_entry())) {
-    if (c->getCID()==cid) {
-      c->setNBRETRY(nbretry);
+    for (BwRequest *c = (BwRequest *)request_list_.lh_first; c ; c=(BwRequest *)(c->next_entry())) {
+        if (c->getCID()==cid) {
+            c->setNBRETRY(nbretry);
+        }
     }
-  }
 }
 
 /*
@@ -641,11 +643,11 @@ void BwContentionSlot::setNBRETRY (int cid, int nbretry)
  */
 void BwContentionSlot::setWINDOW (int cid, int window)
 {
-  for (BwRequest *c = (BwRequest *)request_list_.lh_first; c ; c=(BwRequest *)(c->next_entry())) {
-    if (c->getCID()==cid) {
-      c->setWINDOW(window);
+    for (BwRequest *c = (BwRequest *)request_list_.lh_first; c ; c=(BwRequest *)(c->next_entry())) {
+        if (c->getCID()==cid) {
+            c->setWINDOW(window);
+        }
     }
-  }
 }
 
 /*
@@ -653,11 +655,11 @@ void BwContentionSlot::setWINDOW (int cid, int window)
  */
 void BwContentionSlot::setCODE (int cid, int code)
 {
-  for (BwRequest *c = (BwRequest *)request_list_.lh_first; c ; c=(BwRequest *)(c->next_entry())) {
-    if (c->getCID()==cid) {
-      c->setCODE(code);
+    for (BwRequest *c = (BwRequest *)request_list_.lh_first; c ; c=(BwRequest *)(c->next_entry())) {
+        if (c->getCID()==cid) {
+            c->setCODE(code);
+        }
     }
-  }
 }
 
 /*
@@ -665,11 +667,11 @@ void BwContentionSlot::setCODE (int cid, int code)
  */
 void BwContentionSlot::setTOP (int cid, int top)
 {
-  for (BwRequest *c = (BwRequest *)request_list_.lh_first; c ; c=(BwRequest *)(c->next_entry())) {
-    if (c->getCID()==cid) {
-      c->setTOP(top);
+    for (BwRequest *c = (BwRequest *)request_list_.lh_first; c ; c=(BwRequest *)(c->next_entry())) {
+        if (c->getCID()==cid) {
+            c->setTOP(top);
+        }
     }
-  }
 }
 
 /*
@@ -677,11 +679,11 @@ void BwContentionSlot::setTOP (int cid, int top)
  */
 void BwContentionSlot::setFLAGTRANSMIT (int cid, int flagtransmit)
 {
-  for (BwRequest *c = (BwRequest *)request_list_.lh_first; c ; c=(BwRequest *)(c->next_entry())) {
-    if (c->getCID()==cid) {
-      c->setFLAGTRANSMIT(flagtransmit);
+    for (BwRequest *c = (BwRequest *)request_list_.lh_first; c ; c=(BwRequest *)(c->next_entry())) {
+        if (c->getCID()==cid) {
+            c->setFLAGTRANSMIT(flagtransmit);
+        }
     }
-  }
 }
 
 /*
@@ -689,11 +691,11 @@ void BwContentionSlot::setFLAGTRANSMIT (int cid, int flagtransmit)
  */
 void BwContentionSlot::setFLAGNOWTRANSMIT (int cid, int flagnowtransmit)
 {
-  for (BwRequest *c = (BwRequest *)request_list_.lh_first; c ; c=(BwRequest *)(c->next_entry())) {
-    if (c->getCID()==cid) {
-      c->setFLAGNOWTRANSMIT(flagnowtransmit);
+    for (BwRequest *c = (BwRequest *)request_list_.lh_first; c ; c=(BwRequest *)(c->next_entry())) {
+        if (c->getCID()==cid) {
+            c->setFLAGNOWTRANSMIT(flagnowtransmit);
+        }
     }
-  }
 }
 
 /*
@@ -701,11 +703,11 @@ void BwContentionSlot::setFLAGNOWTRANSMIT (int cid, int flagnowtransmit)
  */
 void BwContentionSlot::setPacket_P (int cid, Packet * p)
 {
-  for (BwRequest *c = (BwRequest *)request_list_.lh_first; c ; c=(BwRequest *)(c->next_entry())) {
-    if (c->getCID()==cid) {
-      c->setPacket_P(p);
+    for (BwRequest *c = (BwRequest *)request_list_.lh_first; c ; c=(BwRequest *)(c->next_entry())) {
+        if (c->getCID()==cid) {
+            c->setPacket_P(p);
+        }
     }
-  }
 }
 
 /**
@@ -713,9 +715,9 @@ void BwContentionSlot::setPacket_P (int cid, Packet * p)
  */
 void BwContentionSlot::resumeTimers (double duration)
 {
-  for (BwRequest *c = (BwRequest *)request_list_.lh_first; c ; c=(BwRequest *)(c->next_entry())) {
-      c->resume(duration);
-  }
+    for (BwRequest *c = (BwRequest *)request_list_.lh_first; c ; c=(BwRequest *)(c->next_entry())) {
+        c->resume(duration);
+    }
 }
 
 /**
@@ -723,7 +725,7 @@ void BwContentionSlot::resumeTimers (double duration)
  */
 void BwContentionSlot::pauseTimers ()
 {
-  for (BwRequest *c = (BwRequest *)request_list_.lh_first; c ; c=(BwRequest *)(c->next_entry())) {
-      c->pause();
-  }
+    for (BwRequest *c = (BwRequest *)request_list_.lh_first; c ; c=(BwRequest *)(c->next_entry())) {
+        c->pause();
+    }
 }

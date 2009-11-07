@@ -26,70 +26,70 @@
  */
 Profile::Profile (SubFrame *subframe, int f, Ofdm_mod_rate enc) : iuc_(0)
 {
-  assert (subframe);
-  subframe_ = subframe;
-  frequency_ = f;
-  encoding_ = enc;
+    assert (subframe);
+    subframe_ = subframe;
+    frequency_ = f;
+    encoding_ = enc;
 }
 
 /**
  * Return the encoding type
  * @return the encoding type
  */
-Ofdm_mod_rate Profile::getEncoding( ) 
-{ 
-  return encoding_; 
+Ofdm_mod_rate Profile::getEncoding( )
+{
+    return encoding_;
 }
 
 /**
  * Set the encoding type
  * @param enc the encoding type
  */
-void Profile::setEncoding( Ofdm_mod_rate enc ) 
+void Profile::setEncoding( Ofdm_mod_rate enc )
 {
-  if (encoding_ != enc)
-    subframe_->incrCCC();
-  encoding_ = enc; 
+    if (encoding_ != enc)
+        subframe_->incrCCC();
+    encoding_ = enc;
 }
 
 /**
  * Return the frequency in unit of kHz
  * @return the frequency
  */
-int Profile::getFrequency( ) 
-{ 
-  return frequency_; 
+int Profile::getFrequency( )
+{
+    return frequency_;
 }
 
 /**
  * Set the frequency in unit of kHz
  * @param f the frequency
  */
-void Profile::setFrequency( int f ) 
-{ 
-  if (frequency_ != f)
-    subframe_->incrCCC();
-  frequency_ = f; 
+void Profile::setFrequency( int f )
+{
+    if (frequency_ != f)
+        subframe_->incrCCC();
+    frequency_ = f;
 }
 
 /**
  * Return the frequency in unit of kHz
  * @return the frequency
  */
-int Profile::getIUC( ) 
-{ 
-  return iuc_; 
+int Profile::getIUC( )
+{
+    return iuc_;
 }
 
 /**
  * Set the IUC number for this profile
  * @param iuc The IUC number for this profile
  */
-void Profile::setIUC( int iuc ) 
-{ 
-  if (iuc_!=0 && iuc_!= iuc)
-    subframe_->incrCCC();
-  iuc_ = iuc; 
+void Profile::setIUC( int iuc )
+{
+    if (iuc_!=0 && iuc_!= iuc)
+        subframe_->incrCCC();
+    iuc_ = iuc;
 }
 
 

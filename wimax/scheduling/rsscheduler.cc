@@ -167,62 +167,62 @@ void RSScheduler::init ()
 {
     WimaxScheduler::init();
 
-        // If the user did not set the profiles by hand, let's do it
-        // automatically
-        if (getMac()->getMap()->getDlSubframe()->getProfile (DIUC_PROFILE_1)==NULL)
-        {
-            //#ifdef SAM_DEBUG
-            debug2 ("Adding profiles\n");
-            //#endif
-            Profile *p = getMac()->getMap()->getDlSubframe()->addProfile ((int)round((getMac()->getPhy()->getFreq()/1000)), OFDM_BPSK_1_2);
-            p->setIUC (DIUC_PROFILE_1);
-            p = getMac()->getMap()->getDlSubframe()->addProfile ((int)round((getMac()->getPhy()->getFreq()/1000)), OFDM_QPSK_1_2);
-            p->setIUC (DIUC_PROFILE_2);
-            p = getMac()->getMap()->getDlSubframe()->addProfile ((int)round((getMac()->getPhy()->getFreq()/1000)), OFDM_QPSK_3_4);
-            p->setIUC (DIUC_PROFILE_3);
-            p = getMac()->getMap()->getDlSubframe()->addProfile ((int)round((getMac()->getPhy()->getFreq()/1000)), OFDM_16QAM_1_2);
-            p->setIUC (DIUC_PROFILE_4);
-            p = getMac()->getMap()->getDlSubframe()->addProfile ((int)round((getMac()->getPhy()->getFreq()/1000)), OFDM_16QAM_3_4);
-            p->setIUC (DIUC_PROFILE_5);
-            p = getMac()->getMap()->getDlSubframe()->addProfile ((int)round((getMac()->getPhy()->getFreq()/1000)), OFDM_64QAM_2_3);
-            p->setIUC (DIUC_PROFILE_6);
-            p = getMac()->getMap()->getDlSubframe()->addProfile ((int)round((getMac()->getPhy()->getFreq()/1000)), OFDM_64QAM_3_4);
-            p->setIUC (DIUC_PROFILE_7);
+    // If the user did not set the profiles by hand, let's do it
+    // automatically
+    if (getMac()->getMap()->getDlSubframe()->getProfile (DIUC_PROFILE_1)==NULL)
+    {
+        //#ifdef SAM_DEBUG
+        debug2 ("Adding profiles\n");
+        //#endif
+        Profile *p = getMac()->getMap()->getDlSubframe()->addProfile ((int)round((getMac()->getPhy()->getFreq()/1000)), OFDM_BPSK_1_2);
+        p->setIUC (DIUC_PROFILE_1);
+        p = getMac()->getMap()->getDlSubframe()->addProfile ((int)round((getMac()->getPhy()->getFreq()/1000)), OFDM_QPSK_1_2);
+        p->setIUC (DIUC_PROFILE_2);
+        p = getMac()->getMap()->getDlSubframe()->addProfile ((int)round((getMac()->getPhy()->getFreq()/1000)), OFDM_QPSK_3_4);
+        p->setIUC (DIUC_PROFILE_3);
+        p = getMac()->getMap()->getDlSubframe()->addProfile ((int)round((getMac()->getPhy()->getFreq()/1000)), OFDM_16QAM_1_2);
+        p->setIUC (DIUC_PROFILE_4);
+        p = getMac()->getMap()->getDlSubframe()->addProfile ((int)round((getMac()->getPhy()->getFreq()/1000)), OFDM_16QAM_3_4);
+        p->setIUC (DIUC_PROFILE_5);
+        p = getMac()->getMap()->getDlSubframe()->addProfile ((int)round((getMac()->getPhy()->getFreq()/1000)), OFDM_64QAM_2_3);
+        p->setIUC (DIUC_PROFILE_6);
+        p = getMac()->getMap()->getDlSubframe()->addProfile ((int)round((getMac()->getPhy()->getFreq()/1000)), OFDM_64QAM_3_4);
+        p->setIUC (DIUC_PROFILE_7);
 
-            p = getMac()->getMap()->getUlSubframe()->addProfile (0, default_mod_);
-            p->setIUC (UIUC_INITIAL_RANGING);
-            p = getMac()->getMap()->getUlSubframe()->addProfile (0, default_mod_);
-            p->setIUC (UIUC_REQ_REGION_FULL);
+        p = getMac()->getMap()->getUlSubframe()->addProfile (0, default_mod_);
+        p->setIUC (UIUC_INITIAL_RANGING);
+        p = getMac()->getMap()->getUlSubframe()->addProfile (0, default_mod_);
+        p->setIUC (UIUC_REQ_REGION_FULL);
 
-            p = getMac()->getMap()->getUlSubframe()->addProfile (0, OFDM_BPSK_1_2);
-            p->setIUC (UIUC_PROFILE_1);
-            p = getMac()->getMap()->getUlSubframe()->addProfile (0, OFDM_QPSK_1_2);
-            p->setIUC (UIUC_PROFILE_2);
-            p = getMac()->getMap()->getUlSubframe()->addProfile (0, OFDM_QPSK_3_4);
-            p->setIUC (UIUC_PROFILE_3);
-            p = getMac()->getMap()->getUlSubframe()->addProfile (0, OFDM_16QAM_1_2);
-            p->setIUC (UIUC_PROFILE_4);
-            p = getMac()->getMap()->getUlSubframe()->addProfile (0, OFDM_16QAM_3_4);
-            p->setIUC (UIUC_PROFILE_5);
-            p = getMac()->getMap()->getUlSubframe()->addProfile (0, OFDM_64QAM_2_3);
-            p->setIUC (UIUC_PROFILE_6);
-            p = getMac()->getMap()->getUlSubframe()->addProfile (0, OFDM_64QAM_3_4);
-            p->setIUC (UIUC_PROFILE_7);
-        }
+        p = getMac()->getMap()->getUlSubframe()->addProfile (0, OFDM_BPSK_1_2);
+        p->setIUC (UIUC_PROFILE_1);
+        p = getMac()->getMap()->getUlSubframe()->addProfile (0, OFDM_QPSK_1_2);
+        p->setIUC (UIUC_PROFILE_2);
+        p = getMac()->getMap()->getUlSubframe()->addProfile (0, OFDM_QPSK_3_4);
+        p->setIUC (UIUC_PROFILE_3);
+        p = getMac()->getMap()->getUlSubframe()->addProfile (0, OFDM_16QAM_1_2);
+        p->setIUC (UIUC_PROFILE_4);
+        p = getMac()->getMap()->getUlSubframe()->addProfile (0, OFDM_16QAM_3_4);
+        p->setIUC (UIUC_PROFILE_5);
+        p = getMac()->getMap()->getUlSubframe()->addProfile (0, OFDM_64QAM_2_3);
+        p->setIUC (UIUC_PROFILE_6);
+        p = getMac()->getMap()->getUlSubframe()->addProfile (0, OFDM_64QAM_3_4);
+        p->setIUC (UIUC_PROFILE_7);
+    }
 
-        //init contention slots
-        ContentionSlot *slot = getMac()->getMap()->getUlSubframe()->getRanging ();
+    //init contention slots
+    ContentionSlot *slot = getMac()->getMap()->getUlSubframe()->getRanging ();
 //  slot->setSize (getInitRangingopportunity ());
-        slot->setSize (getMac()->macmib_.init_contention_size);
-        slot->setBackoff_start (getMac()->macmib_.rng_backoff_start);
-        slot->setBackoff_stop (getMac()->macmib_.rng_backoff_stop);
+    slot->setSize (getMac()->macmib_.init_contention_size);
+    slot->setBackoff_start (getMac()->macmib_.rng_backoff_start);
+    slot->setBackoff_stop (getMac()->macmib_.rng_backoff_stop);
 
-        slot = getMac()->getMap()->getUlSubframe()->getBw_req ();
+    slot = getMac()->getMap()->getUlSubframe()->getBw_req ();
 //  slot->setSize (getBWopportunity ());
-        slot->setSize (getMac()->macmib_.bw_req_contention_size);
-        slot->setBackoff_start (getMac()->macmib_.bw_backoff_start);
-        slot->setBackoff_stop (getMac()->macmib_.bw_backoff_stop);
-    
+    slot->setSize (getMac()->macmib_.bw_req_contention_size);
+    slot->setBackoff_start (getMac()->macmib_.bw_backoff_start);
+    slot->setBackoff_stop (getMac()->macmib_.bw_backoff_stop);
+
 }
 
 /**
@@ -1214,9 +1214,9 @@ void RSScheduler::ssschedule()
  */
 void RSScheduler::schedule ()
 {
-int rand = (int)(Scheduler::instance().clock()*1000)%2;
-    if(rand){
-      ssschedule();
+    int rand = (int)(Scheduler::instance().clock()*1000)%2;
+    if (rand) {
+        ssschedule();
     }
     //The scheduler will perform the following steps:
     //1-Clear UL map

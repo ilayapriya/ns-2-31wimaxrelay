@@ -25,8 +25,8 @@
  */
 ContentionTimer::ContentionTimer( ContentionRequest* c ) : TimerHandler()
 {
-  assert (c);
-  c_ = c;
+    assert (c);
+    c_ = c;
 }
 
 /**
@@ -35,7 +35,7 @@ ContentionTimer::ContentionTimer( ContentionRequest* c ) : TimerHandler()
  */
 void ContentionTimer::expire( Event* e )
 {
-  c_->expire();
+    c_->expire();
 }
 
 

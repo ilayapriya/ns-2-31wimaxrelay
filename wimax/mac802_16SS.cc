@@ -162,7 +162,6 @@ void Mac802_16SS::init ()
         for (int j = 0 ; j<nbSubchannel ; j++)
             basepower_[i][j] = 0.0 ;
     }
-
     //init the scheduler
     scheduler_->init();
 }

@@ -59,9 +59,9 @@ int DestClassifier::classify (Packet * p)
     if (dst == -1) {
         if (mac_->getNodeType ()==STA_BS)
             return BROADCAST_CID;
-        else if(mac_->getNodeType ()==STA_RS)
+        else if (mac_->getNodeType ()==STA_RS)
         {
-        	return BROADCAST_CID;
+            return BROADCAST_CID;
         }
         else {
             //I am a MN, check if I am connected
